@@ -11,7 +11,7 @@ export default function TitleScreen() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-8 px-4 py-10">
       <h1 className="font-display uppercase tracking-[0.3em] text-5xl sm:text-6xl">
-        CARRI<span className="text-broadcast-yellow">È</span>RE
+        CARRI<span className="text-accent">È</span>RE
       </h1>
 
       <div className="w-full max-w-2xl flex flex-col gap-4">

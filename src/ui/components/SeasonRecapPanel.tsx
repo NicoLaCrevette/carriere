@@ -22,21 +22,21 @@ export default function SeasonRecapPanel({ career, record }: { career: CareerSta
   ];
   const honours = [...record.trophies.map((x) => humanize(x)), ...record.awards.map((a) => `${humanize(a.kind)}${a.rank ? ` (${a.rank}e)` : ''}`)];
   return (
-    <Panel className="border-broadcast-yellow/60">
+    <Panel accent>
       <SectionTitle>Saison {record.label} terminée · {club?.name ?? record.clubId}</SectionTitle>
       <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-3">
         {cells.map(([label, value]) => (
-          <div key={label} className="flex justify-between border-b border-pitch-800 py-1">
-            <dt className="text-broadcast-grey">{label}</dt>
+          <div key={label} className="flex justify-between border-b border-white/[0.05] py-1">
+            <dt className="text-muted">{label}</dt>
             <dd>{typeof value === 'number' ? <NumberTabular value={value} /> : value}</dd>
           </div>
         ))}
       </dl>
       <p className="mt-3 text-sm">
-        <span className="text-broadcast-grey">Palmarès de la saison : </span>
+        <span className="text-muted">Palmarès de la saison : </span>
         {honours.length > 0 ? honours.join(', ') : 'rien cette année.'}
       </p>
-      {record.narrativeSummary && <p className="mt-2 text-sm italic text-broadcast-grey">{record.narrativeSummary}</p>}
+      {record.narrativeSummary && <p className="mt-2 text-sm italic text-muted">{record.narrativeSummary}</p>}
     </Panel>
   );
 }

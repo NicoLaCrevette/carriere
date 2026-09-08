@@ -181,6 +181,7 @@ export function createPlayer(setup: CareerSetup, club: Club, league: League, rng
       foot: setup.foot,
       heightCm: setup.heightCm,
       weightKg: setup.weightKg,
+      ...(setup.avatar ? { avatar: setup.avatar } : {}),
       archetypes: setup.archetypes.slice(0, 3),
     },
     attributes,
@@ -201,6 +202,7 @@ export function createPlayer(setup: CareerSetup, club: Club, league: League, rng
     contract: initialContract(setup, club, league, overall, date),
     marketValue: 0,
     marketValueHistory: [],
+    overallHistory: [],
     seasonStats: emptySeasonStats(),
     careerStats: emptyStats(),
     history: [],
@@ -217,5 +219,6 @@ export function createPlayer(setup: CareerSetup, club: Club, league: League, rng
   player.potentialEstimate = estimatePotential(player, setup.startAge, difficultyProfile(setup.difficulty), date);
   player.marketValue = computeMarketValue(player, setup.startAge, club, league, 1, date);
   player.marketValueHistory = [{ date, value: player.marketValue }];
+  player.overallHistory = [{ date, overall: player.overall, attributes: { ...player.attributes } }];
   return player;
 }

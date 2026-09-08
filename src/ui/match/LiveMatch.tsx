@@ -18,6 +18,7 @@ import { playCue } from '../lib/sounds';
 import Button from '../components/Button';
 import Panel from '../components/Panel';
 import NumberTabular from '../components/NumberTabular';
+import ActionExplain from '../components/ActionExplain';
 
 /** Temps forts du fil : ce qui change le match, pas chaque faute. */
 const HIGHLIGHT_TYPES: ReadonlySet<MatchEvent['type']> = new Set([
@@ -56,7 +57,7 @@ function voiceForSpeaker(career: CareerState, speaker: NarrationLine['speaker'])
 function EventRow({ e, career }: { e: MatchEvent; career: CareerState }) {
   const who = [nameOf(career, e.playerId), nameOf(career, e.secondaryPlayerId)].filter(Boolean).join(' → ');
   return (
-    <li className={`flex gap-2 text-xs py-0.5 ${e.involvesPlayer ? 'text-broadcast-yellow' : 'text-broadcast-grey'}`}>
+    <li className={`flex gap-2 text-xs py-0.5 ${e.involvesPlayer ? 'text-accent' : 'text-muted'}`}>
       <span className="w-8 shrink-0 tabular-nums">{e.minute}'</span>
       <span>{eventLabel(e.type)}{who ? ` — ${who}` : ''}</span>
     </li>
@@ -277,46 +278,46 @@ export default function LiveMatch() {
       <Panel>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="bg-broadcast-red px-2 py-0.5 text-[10px] font-display uppercase tracking-widest">En direct</span>
+            <span className="rounded-full bg-signal-red px-2.5 py-0.5 text-[10px] font-display uppercase tracking-widest">En direct</span>
             <span className="font-display uppercase tracking-wide text-2xl">
-              {home.shortName} <NumberTabular value={ms.homeGoals} className="mx-1 text-broadcast-yellow" /> - <NumberTabular value={ms.awayGoals} className="mx-1 text-broadcast-yellow" /> {away.shortName}
+              {home.shortName} <NumberTabular value={ms.homeGoals} className="mx-1 text-accent" /> - <NumberTabular value={ms.awayGoals} className="mx-1 text-accent" /> {away.shortName}
             </span>
-            <span className="tabular-nums text-broadcast-grey">{ms.minute}{ms.addedTime ? `+${ms.addedTime}` : ''}'</span>
+            <span className="tabular-nums text-muted">{ms.minute}{ms.addedTime ? `+${ms.addedTime}` : ''}'</span>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-[10px] uppercase tracking-wide text-broadcast-grey">Note</p>
+              <p className="text-[10px] uppercase tracking-wide text-muted">Note</p>
               <p className="font-display text-2xl tabular-nums">{ms.playerRating.toFixed(1)}</p>
             </div>
             {lastLog && (
-              <p className={`text-xs tabular-nums ${lastLog.delta >= 0 ? 'text-broadcast-green' : 'text-broadcast-red'}`}>
+              <p className={`text-xs tabular-nums ${lastLog.delta >= 0 ? 'text-signal-green' : 'text-signal-red'}`}>
                 {formatSigned(lastLog.delta, 2)} {lastLog.reason}
               </p>
             )}
           </div>
         </div>
-        <div className="mt-2 h-1 w-full bg-pitch-700">
-          <div className="h-1 bg-broadcast-green transition-all" style={{ width: `${Math.round(50 + momentum * 50)}%` }} title="Momentum" />
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.07]">
+          <div className="h-full rounded-full bg-signal-green transition-all duration-500" style={{ width: `${Math.round(50 + momentum * 50)}%` }} title="Momentum" />
         </div>
-        {!onPitch && phase !== 'finished' && <p className="mt-2 text-xs text-broadcast-grey">Tu es sur le banc. Le coach t'observe.</p>}
+        {!onPitch && phase !== 'finished' && <p className="mt-2 text-xs text-muted">Tu es sur le banc. Le coach t'observe.</p>}
       </Panel>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel className="lg:col-span-2">
-          {phase === 'running' && <p className="text-sm text-broadcast-grey">Le match se joue…</p>}
+          {phase === 'running' && <p className="text-sm text-muted">Le match se joue…</p>}
           {(phase === 'awaiting' || phase === 'resolving') && situation && (
             <div className="space-y-3">
               <p className="text-lg leading-relaxed">{situationText || 'Une situation se présente…'}</p>
               {remaining !== null && phase === 'awaiting' && timerTotalSeconds > 0 && (
-                <div className="h-1 w-full bg-pitch-700">
-                  <div className={`h-1 transition-all ${remaining < 3 ? 'bg-broadcast-red' : 'bg-broadcast-yellow'}`} style={{ width: `${Math.round(Math.min(1, remaining / timerTotalSeconds) * 100)}%` }} />
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.07]">
+                  <div className={`h-full rounded-full transition-all ${remaining < 3 ? 'bg-signal-red' : 'bg-accent'}`} style={{ width: `${Math.round(Math.min(1, remaining / timerTotalSeconds) * 100)}%` }} />
                 </div>
               )}
               {phase === 'awaiting' && deadline === null && timerTotalSeconds > 0 && settings.voiceMode !== 'silencieux' && (
-                <p className="text-[10px] uppercase tracking-wide text-broadcast-grey">Écoute… le chrono partira à la fin de l'annonce.</p>
+                <p className="text-[10px] uppercase tracking-wide text-muted">Écoute… le chrono partira à la fin de l'annonce.</p>
               )}
               {phase === 'awaiting' && graceExtensions > 0 && (
-                <p className="text-[10px] uppercase tracking-wide text-broadcast-grey">Temps prolongé — tu es en train de parler ({graceExtensions}/{BALANCE.situations.voiceGraceMaxExtensions})</p>
+                <p className="text-[10px] uppercase tracking-wide text-muted">Temps prolongé — tu es en train de parler ({graceExtensions}/{BALANCE.situations.voiceGraceMaxExtensions})</p>
               )}
               <textarea
                 ref={inputRef}
@@ -333,14 +334,14 @@ export default function LiveMatch() {
                 <Button variant="secondary" onClick={() => { setInput(''); void answer('', { timedOut: true }); }} disabled={phase !== 'awaiting'}>Laisser faire</Button>
                 {settings.voiceMode === 'vocal' && (
                   voice.listening
-                    ? <span className="text-xs text-broadcast-red">● Parle, j'écoute…</span>
+                    ? <span className="text-xs text-signal-red">● Parle, j'écoute…</span>
                     : voice.micAvailable
                       ? <Button variant="secondary" onClick={() => voice.startListening()} disabled={phase !== 'awaiting'}>{mainsLibres ? 'Reprendre la parole' : 'Parler (ou espace)'}</Button>
-                      : <span className="text-xs text-broadcast-grey">Micro indisponible</span>
+                      : <span className="text-xs text-muted">Micro indisponible</span>
                 )}
-                <span className="ml-auto text-[10px] uppercase tracking-wide text-broadcast-grey">Texte : {situationSource === 'llm' ? 'IA' : 'repli'}</span>
+                <span className="ml-auto text-[10px] uppercase tracking-wide text-muted">Texte : {situationSource === 'llm' ? 'IA' : 'repli'}</span>
               </div>
-              {voice.error && <p className="text-xs text-broadcast-red">{voice.error}</p>}
+              {voice.error && <p className="text-xs text-signal-red">{voice.error}</p>}
             </div>
           )}
           {phase === 'narrated' && lastOutcome && (
@@ -348,31 +349,31 @@ export default function LiveMatch() {
               <ul className="space-y-1">
                 {narration.map((line, i) => (
                   <li key={i} className="text-base leading-relaxed">
-                    <span className={`mr-2 text-[10px] uppercase tracking-wide ${line.speaker === 'commentateur' ? 'text-broadcast-yellow' : 'text-broadcast-grey'}`}>{SPEAKER_LABELS[line.speaker]}</span>
+                    <span className={`mr-2 text-[10px] uppercase tracking-wide ${line.speaker === 'commentateur' ? 'text-accent' : 'text-muted'}`}>{SPEAKER_LABELS[line.speaker]}</span>
                     {line.text}
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-broadcast-grey">
-                Action : {lastAction?.action.replace(/_/g, ' ')} · risque {lastAction ? Math.round(lastAction.risque * 100) : 0} % · probabilité {Math.round(lastOutcome.probability * 100)} % ·{' '}
-                <span className={lastOutcome.ratingDelta >= 0 ? 'text-broadcast-green' : 'text-broadcast-red'}>{formatSigned(lastOutcome.ratingDelta, 2)}</span> {lastOutcome.ratingReason}
+              <ActionExplain outcome={lastOutcome} action={lastAction ?? undefined} />
+              <p className="text-[11px] text-muted">
+                <span className={lastOutcome.ratingDelta >= 0 ? 'text-signal-green' : 'text-signal-red'}>{formatSigned(lastOutcome.ratingDelta, 2)}</span> {lastOutcome.ratingReason}
                 <span className="ml-2">({intentSource === 'llm' ? 'IA' : intentSource === 'mots-cles' ? 'mots-clés' : 'défaut'} · narration {narrationSource === 'llm' ? 'IA' : 'repli'})</span>
               </p>
               <Button onClick={() => void continueMatch()}>Continuer ↵</Button>
             </div>
           )}
-          {error && <p className="mt-2 text-xs text-broadcast-red">{error}</p>}
+          {error && <p className="mt-2 text-xs text-signal-red">{error}</p>}
         </Panel>
 
         <Panel>
           <div className="mb-1 flex items-center justify-between">
-            <p className="text-[10px] uppercase tracking-wide text-broadcast-grey">Fil du match</p>
-            <button type="button" className="text-[10px] uppercase tracking-wide text-broadcast-grey hover:text-white" onClick={() => setHighlightsOnly((v) => !v)}>
+            <p className="text-[10px] uppercase tracking-wide text-muted">Fil du match</p>
+            <button type="button" className="text-[10px] uppercase tracking-wide text-muted hover:text-white" onClick={() => setHighlightsOnly((v) => !v)}>
               {highlightsOnly ? 'Temps forts · tout voir' : 'Tout · temps forts'}
             </button>
           </div>
           <ul>{feed.map((e, i) => <EventRow key={`${e.minute}-${e.seq}-${i}`} e={e} career={career} />)}</ul>
-          {ms.summaryLines.length > 0 && <p className="mt-2 text-xs italic text-broadcast-grey">{ms.summaryLines[ms.summaryLines.length - 1]!.text}</p>}
+          {ms.summaryLines.length > 0 && <p className="mt-2 text-xs italic text-muted">{ms.summaryLines[ms.summaryLines.length - 1]!.text}</p>}
           <div className="mt-3 flex gap-2">
             <Button variant="ghost" onClick={() => void skipToEnd()} disabled={phase === 'resolving'}>Simuler la fin du match</Button>
             {voice.speaking && <Button variant="ghost" onClick={() => voice.interrupt()}>Couper la parole</Button>}

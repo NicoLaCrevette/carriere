@@ -8,6 +8,7 @@ import { formatDateFr } from '../../engine/calendar/dates';
 import { POSITION_LABELS } from '../../engine/config/positions';
 import { actionLabel, formatSigned, outcomeLabel, situationLabel } from '../lib/labels';
 import Panel from '../components/Panel';
+import ActionExplain from '../components/ActionExplain';
 import SectionTitle from '../components/SectionTitle';
 import MatchTimeline from '../components/MatchTimeline';
 import RatingTicker from '../components/RatingTicker';
@@ -39,7 +40,7 @@ export default function MatchScreen() {
     return (
       <div className="p-6">
         <Panel>
-          <p className="text-sm text-broadcast-grey">Aucun match à afficher pour l'instant.</p>
+          <p className="text-sm text-muted">Aucun match à afficher pour l'instant.</p>
         </Panel>
       </div>
     );
@@ -56,29 +57,29 @@ export default function MatchScreen() {
       <Panel>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <p className="text-[11px] uppercase tracking-wide text-broadcast-grey">
+            <p className="text-[11px] uppercase tracking-wide text-muted">
               {competition?.name ?? ''} · {formatDateFr(match.date)}
               {match.matchday ? ` · J${match.matchday}` : ''}
             </p>
             <p className="font-display uppercase tracking-wide text-xl">
-              {home?.name ?? match.homeClubId} <NumberTabular value={result.homeGoals} className="mx-2 text-broadcast-yellow" />
+              {home?.name ?? match.homeClubId} <NumberTabular value={result.homeGoals} className="mx-2 text-accent" />
               -
-              <NumberTabular value={result.awayGoals} className="mx-2 text-broadcast-yellow" /> {away?.name ?? match.awayClubId}
+              <NumberTabular value={result.awayGoals} className="mx-2 text-accent" /> {away?.name ?? match.awayClubId}
             </p>
-            <p className="text-xs text-broadcast-grey">
+            <p className="text-xs text-muted">
               xG {result.homeXg.toFixed(2)} - {result.awayXg.toFixed(2)} · Possession {result.homePossession}% - {100 - result.homePossession}% ·{' '}
               {result.attendance.toLocaleString('fr-FR')} spectateurs
             </p>
           </div>
           {report?.headline && (
-            <p className="max-w-sm border-l-2 border-broadcast-yellow pl-3 text-sm italic text-broadcast-grey">« {report.headline} »</p>
+            <p className="max-w-sm border-l-2 border-accent pl-3 text-sm italic text-muted">« {report.headline} »</p>
           )}
         </div>
       </Panel>
 
       {!report && (
         <Panel>
-          <p className="text-sm text-broadcast-grey">Tu n'étais pas convoqué pour ce match.</p>
+          <p className="text-sm text-muted">Tu n'étais pas convoqué pour ce match.</p>
         </Panel>
       )}
 
@@ -99,7 +100,7 @@ export default function MatchScreen() {
       <Panel>
         <SectionTitle>Chronologie</SectionTitle>
         {result.events.length === 0 && result.summaryLines.length === 0 && (
-          <p className="mb-2 text-xs text-broadcast-grey">
+          <p className="mb-2 text-xs text-muted">
             Le détail minute par minute des matchs anciens n'est pas conservé : la note, les statistiques et les décisions restent, eux.
           </p>
         )}
@@ -108,35 +109,27 @@ export default function MatchScreen() {
 
       {report && report.decisions.length > 0 && (
         <Panel>
-          <SectionTitle>Décisions</SectionTitle>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wide text-broadcast-grey border-b border-pitch-700">
-                  <th className="py-1 pr-2">Min.</th>
-                  <th className="py-1 pr-2">Situation</th>
-                  <th className="py-1 pr-2">Action</th>
-                  <th className="py-1 pr-2">Issue</th>
-                  <th className="py-1 pr-2 text-right">Note</th>
-                  <th className="py-1 pr-2">Motif</th>
-                </tr>
-              </thead>
-              <tbody>
-                {report.decisions.map((d) => (
-                  <tr key={d.situationId} className="border-b border-pitch-800 align-top">
-                    <td className="py-1 pr-2 tabular-nums text-broadcast-grey">{d.minute}'</td>
-                    <td className="py-1 pr-2">{situationLabel(d.kind)}</td>
-                    <td className="py-1 pr-2">{actionLabel(d.classified.action)}</td>
-                    <td className="py-1 pr-2">{outcomeLabel(d.outcome.kind)}</td>
-                    <td className={`py-1 pr-2 text-right tabular-nums ${d.outcome.ratingDelta >= 0 ? 'text-broadcast-green' : 'text-broadcast-red'}`}>
-                      {formatSigned(d.outcome.ratingDelta, 1)}
-                    </td>
-                    <td className="py-1 pr-2 text-broadcast-grey">{d.outcome.ratingReason}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <SectionTitle
+            right={<span className="text-[11px] uppercase tracking-wide text-muted">{report.decisions.length} décisions</span>}
+          >
+            Tes décisions, et pourquoi elles ont marché ou non
+          </SectionTitle>
+          <ul className="space-y-3">
+            {report.decisions.map((d) => (
+              <li key={d.situationId}>
+                <div className="mb-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs">
+                  <span className="rounded-full bg-white/[0.06] px-2 py-0.5 tabular-nums text-muted">{d.minute}'</span>
+                  <span className="text-white">{situationLabel(d.kind)}</span>
+                  <span className="text-muted">→ {actionLabel(d.classified.action)}</span>
+                  <span className="text-muted">· {outcomeLabel(d.outcome.kind)}</span>
+                  <span className={`ml-auto tabular-nums ${d.outcome.ratingDelta >= 0 ? 'text-signal-green' : 'text-signal-red'}`}>
+                    {formatSigned(d.outcome.ratingDelta, 1)} {d.outcome.ratingReason}
+                  </span>
+                </div>
+                <ActionExplain outcome={d.outcome} action={d.classified} />
+              </li>
+            ))}
+          </ul>
         </Panel>
       )}
 
@@ -148,7 +141,7 @@ export default function MatchScreen() {
       )}
 
       {report && (
-        <p className="text-xs text-broadcast-grey">
+        <p className="text-xs text-muted">
           Poste : {POSITION_LABELS[career.player.identity.position]} · Minutes jouées : {report.minutesPlayed}
           {report.subbedOffReason ? ` · Sorti (${report.subbedOffReason})` : ''}
         </p>

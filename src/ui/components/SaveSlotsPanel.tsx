@@ -96,14 +96,14 @@ export default function SaveSlotsPanel() {
         </Button>
       </div>
 
-      {loading && <p className="text-broadcast-grey text-sm">Chargement…</p>}
-      {!loading && slots.length === 0 && <p className="text-broadcast-grey text-sm">Aucune carrière pour l'instant.</p>}
-      <ul className="divide-y divide-pitch-800">
+      {loading && <p className="text-muted text-sm">Chargement…</p>}
+      {!loading && slots.length === 0 && <p className="text-muted text-sm">Aucune carrière pour l'instant.</p>}
+      <ul className="divide-y divide-ink-800">
         {slots.map((slot) => (
           <li key={slot.id} className="flex items-center gap-3 py-2 text-sm flex-wrap">
             <div className="flex-1 min-w-0">
               <p className="font-display uppercase tracking-wide truncate">{slot.name}</p>
-              <p className="text-broadcast-grey text-xs">
+              <p className="text-muted text-xs">
                 {POSITION_LABELS[slot.summary.position]} · {slot.summary.age} ans · {slot.summary.season} · {formatDateFrShort(slot.summary.date)} · Note{' '}
                 <NumberTabular value={slot.summary.overall} />
                 {slot.summary.sandbox && ' · Bac à sable'}

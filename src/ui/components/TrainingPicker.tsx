@@ -21,8 +21,8 @@ export default function TrainingPicker({ actions, selectedId, onSelect, disabled
             type="button"
             disabled={disabled}
             onClick={() => onSelect(action)}
-            className={`border px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-              active ? 'border-broadcast-yellow bg-broadcast-yellow/10 text-broadcast-yellow' : 'border-pitch-600 hover:border-pitch-400'
+            className={`rounded-2xl px-3 py-2 text-left text-sm ring-1 transition disabled:cursor-not-allowed disabled:opacity-50 ${
+              active ? 'ring-accent bg-accent/10 text-accent' : 'ring-white/10 hover:ring-white/25'
             }`}
           >
             {action.label}

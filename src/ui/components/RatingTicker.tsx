@@ -12,19 +12,19 @@ export default function RatingTicker({ rating, log }: RatingTickerProps) {
   return (
     <div>
       <div className="mb-2 flex items-baseline gap-2">
-        <span className="text-[11px] uppercase tracking-wide text-broadcast-grey">Note</span>
-        <NumberTabular value={formatRating(rating)} className="text-2xl font-display text-broadcast-yellow" />
-        <span className="text-broadcast-grey">/ 10</span>
+        <span className="text-[11px] uppercase tracking-wide text-muted">Note</span>
+        <NumberTabular value={formatRating(rating)} className="text-2xl font-display text-accent" />
+        <span className="text-muted">/ 10</span>
       </div>
       <ul className="space-y-0.5 text-sm max-h-64 overflow-y-auto">
         {log.map((entry, i) => (
           <li key={i} className="flex gap-2">
-            <span className="w-10 shrink-0 tabular-nums text-broadcast-grey">{entry.minute}'</span>
-            <span className={entry.delta >= 0 ? 'text-broadcast-green' : 'text-broadcast-red'}>{formatSigned(entry.delta, 1)}</span>
-            <span className="text-broadcast-grey">{entry.reason}</span>
+            <span className="w-10 shrink-0 tabular-nums text-muted">{entry.minute}'</span>
+            <span className={entry.delta >= 0 ? 'text-signal-green' : 'text-signal-red'}>{formatSigned(entry.delta, 1)}</span>
+            <span className="text-muted">{entry.reason}</span>
           </li>
         ))}
-        {log.length === 0 && <li className="text-broadcast-grey">Aucune variation notable.</li>}
+        {log.length === 0 && <li className="text-muted">Aucune variation notable.</li>}
       </ul>
     </div>
   );

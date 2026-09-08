@@ -50,13 +50,18 @@ function incumbentBonus(c: Candidate, slot: Position, hierarchy: Club['positionH
 }
 
 /** Score de sélection d'un candidat pour un poste (plus haut = préféré). */
+/** Points de note perdus par le joueur incarné faute de confiance du coach (0 à 100 → maxPenalty à 0). */
+export function trustPenalty(c: Candidate): number {
+  if (!c.isPlayer) return 0;
+  const trust = Math.min(100, Math.max(0, c.coachTrust));
+  return L.playerTrust.maxPenalty * (1 - trust / 100);
+}
+
 export function selectionScore(c: Candidate, slot: Position, ctx: ScoringContext): number {
-  const overall = c.overall + youthBonus(c, ctx.coach) + incumbentBonus(c, slot, ctx.hierarchy);
+  const overall = c.overall + youthBonus(c, ctx.coach) + incumbentBonus(c, slot, ctx.hierarchy) - trustPenalty(c);
   const formFactor = 1 + c.form * L.formPerPoint;
   const fitnessFactor = 1 - L.fitnessWeight + L.fitnessWeight * c.fitness / 100;
-  // De `base` à 0 de confiance jusqu'à exactement 1 à 100 (un joueur pleinement soutenu n'a ni bonus ni malus).
-  const trustFactor = c.isPlayer ? L.playerTrust.base + (1 - L.playerTrust.base) * Math.min(100, Math.max(0, c.coachTrust)) / 100 : 1;
-  return overall * candidateCompat(c, slot) * formFactor * fitnessFactor * trustFactor;
+  return overall * candidateCompat(c, slot) * formFactor * fitnessFactor;
 }
 
 /** Vrai si le joueur incarné est indisponible pour ce match (blessure active ou suspension dans la compétition). */

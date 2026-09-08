@@ -29,12 +29,12 @@ export default function MatchTimeline({ events, summaryLines, nameOf }: MatchTim
       order: e.seq,
       key: `e-${i}`,
       node: (
-        <div className={`flex gap-2 py-1 px-2 -mx-2 ${e.involvesPlayer ? 'bg-broadcast-yellow/10 text-broadcast-yellow' : ''}`}>
-          <span className="w-10 shrink-0 tabular-nums text-broadcast-grey">{e.minute}'</span>
+        <div className={`flex gap-2 py-1 px-2 -mx-2 ${e.involvesPlayer ? 'bg-accent/10 text-accent' : ''}`}>
+          <span className="w-10 shrink-0 tabular-nums text-muted">{e.minute}'</span>
           <span className="flex-1">
             <span className="font-semibold">{eventLabel(e.type)}</span>
             {e.playerId && <span> — {nameOf(e.playerId)}</span>}
-            {e.secondaryPlayerId && <span className="text-broadcast-grey"> ({nameOf(e.secondaryPlayerId)})</span>}
+            {e.secondaryPlayerId && <span className="text-muted"> ({nameOf(e.secondaryPlayerId)})</span>}
           </span>
         </div>
       ),
@@ -45,7 +45,7 @@ export default function MatchTimeline({ events, summaryLines, nameOf }: MatchTim
       minute: s.from,
       order: -1,
       key: `s-${i}`,
-      node: <p className="py-1 pl-12 text-sm italic text-broadcast-grey">{s.text}</p>,
+      node: <p className="py-1 pl-12 text-sm italic text-muted">{s.text}</p>,
     });
   });
   items.sort((a, b) => a.minute - b.minute || a.order - b.order);

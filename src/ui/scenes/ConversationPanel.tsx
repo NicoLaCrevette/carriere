@@ -13,6 +13,7 @@ import { analysisBadges } from '../../llm/scenes/conversation';
 import { REPUTATION_LABELS, formatSigned, humanize } from '../lib/labels';
 import Button from '../components/Button';
 import Panel from '../components/Panel';
+import PlayerAvatar from '../components/PlayerAvatar';
 
 export default function ConversationPanel() {
   const career = useCareerStore((s) => s.career);
@@ -29,6 +30,7 @@ export default function ConversationPanel() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const lastTurn = active ? active.turns[active.turns.length - 1] : null;
+  const couleursClub = career ? career.world.clubs[career.player.contract.clubId]?.colors : undefined;
   const npcVoice = career && lastTurn ? voiceFor(career, lastTurn.npcId) : null;
 
   // Tout à la voix : le micro s'ouvre dès que le PNJ a fini de parler.
@@ -89,36 +91,40 @@ export default function ConversationPanel() {
   const answered = active.turns.filter((t) => t.playerText);
 
   return (
-    <Panel className="border-broadcast-yellow/60">
-      <div className="flex items-center justify-between gap-2">
-        <p className="font-display uppercase tracking-wide text-broadcast-yellow">{active.title}</p>
-        <span className="text-[10px] uppercase tracking-wide text-broadcast-grey">{lastTurn.npcName} · {humanize(lastTurn.npcKind)}</span>
+    <Panel accent>
+      <div className="flex items-center gap-3">
+        {/* Le portrait de l'interlocuteur : savoir à qui on parle avant même de lire. */}
+        <PlayerAvatar id={lastTurn.npcId} {...(couleursClub ? { couleurs: couleursClub } : {})} taille={44} anneau />
+        <div className="min-w-0">
+          <p className="font-display uppercase tracking-wide text-accent leading-tight truncate">{active.title}</p>
+          <p className="text-[11px] uppercase tracking-wide text-muted truncate">{lastTurn.npcName} · {humanize(lastTurn.npcKind)}</p>
+        </div>
       </div>
 
       <ul className="mt-3 space-y-3">
         {answered.map((t, i) => (
           <li key={i} className="space-y-1">
-            <p className="text-sm"><span className="text-broadcast-grey">{t.npcName} :</span> « {t.npcLine} »</p>
-            <p className="text-sm text-broadcast-yellow"><span className="text-broadcast-grey">Toi :</span> « {t.playerText} »{t.interrupted ? ' (en lui coupant la parole)' : ''}</p>
+            <p className="text-sm"><span className="text-muted">{t.npcName} :</span> « {t.npcLine} »</p>
+            <p className="text-sm text-accent"><span className="text-muted">Toi :</span> « {t.playerText} »{t.interrupted ? ' (en lui coupant la parole)' : ''}</p>
             {t.analysis && (
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
                 {analysisBadges(t.analysis).map((b, j) => (
-                  <span key={j} className={`px-1.5 py-0.5 border ${b.good ? 'border-broadcast-green/60 text-broadcast-green' : 'border-broadcast-red/60 text-broadcast-red'}`}>{b.label} {b.good ? '✔' : '✘'}</span>
+                  <span key={j} className={`rounded-full px-2 py-0.5 ring-1 ${b.good ? 'ring-signal-green/50 text-signal-green' : 'ring-signal-red/50 text-signal-red'}`}>{b.label} {b.good ? '✔' : '✘'}</span>
                 ))}
-                <span className="text-broadcast-grey">score {t.analysis.communication_score.toFixed(1)}/10</span>
+                <span className="text-muted">score {t.analysis.communication_score.toFixed(1)}/10</span>
                 {t.applied && Object.entries(t.applied).map(([k, v]) => (
-                  <span key={k} className={`tabular-nums ${(v ?? 0) >= 0 ? 'text-broadcast-green' : 'text-broadcast-red'}`}>{REPUTATION_LABELS[k as keyof typeof REPUTATION_LABELS]} {formatSigned(v ?? 0, 1)}</span>
+                  <span key={k} className={`tabular-nums ${(v ?? 0) >= 0 ? 'text-signal-green' : 'text-signal-red'}`}>{REPUTATION_LABELS[k as keyof typeof REPUTATION_LABELS]} {formatSigned(v ?? 0, 1)}</span>
                 ))}
-                <span className="text-broadcast-grey">({t.source === 'llm' ? 'IA' : 'repli'})</span>
+                <span className="text-muted">({t.source === 'llm' ? 'IA' : 'repli'})</span>
               </div>
             )}
           </li>
         ))}
         {!active.done && (
-          <li className="text-base leading-relaxed"><span className="text-broadcast-grey">{lastTurn.npcName} :</span> « {lastTurn.npcLine} »</li>
+          <li className="text-base leading-relaxed"><span className="text-muted">{lastTurn.npcName} :</span> « {lastTurn.npcLine} »</li>
         )}
         {active.done && lastAnswer?.reply && (
-          <li className="text-base leading-relaxed"><span className="text-broadcast-grey">{lastTurn.npcName} :</span> « {lastAnswer.reply} »</li>
+          <li className="text-base leading-relaxed"><span className="text-muted">{lastTurn.npcName} :</span> « {lastAnswer.reply} »</li>
         )}
       </ul>
 
@@ -141,26 +147,26 @@ export default function ConversationPanel() {
             <Button variant="ghost" onClick={close}>Écourter</Button>
             {settings.voiceMode === 'vocal' && (
               voice.listening
-                ? <span className="text-xs text-broadcast-red">● Parle, j'écoute…</span>
+                ? <span className="text-xs text-signal-red">● Parle, j'écoute…</span>
                 : voice.micAvailable
                   ? (
                     <Button variant="secondary" onClick={() => voice.startListening()}>
                       {mainsLibres ? 'Reprendre la parole' : 'Parler (ou barre espace)'}
                     </Button>
                   )
-                  : <span className="text-xs text-broadcast-grey">Micro indisponible</span>
+                  : <span className="text-xs text-muted">Micro indisponible</span>
             )}
-            {voice.error && <span className="text-xs text-broadcast-red">{voice.error}</span>}
+            {voice.error && <span className="text-xs text-signal-red">{voice.error}</span>}
           </div>
-          {settings.subtitles && voice.speaking && <p className="text-xs italic text-broadcast-grey">{voice.speaking.text}</p>}
+          {settings.subtitles && voice.speaking && <p className="text-xs italic text-muted">{voice.speaking.text}</p>}
         </div>
       ) : (
         <div className="mt-3 flex items-center gap-3">
-          <p className="text-sm text-broadcast-grey">Fin de la scène.</p>
+          <p className="text-sm text-muted">Fin de la scène.</p>
           <Button variant="secondary" onClick={close}>Terminer</Button>
         </div>
       )}
-      {error && <p className="mt-2 text-xs text-broadcast-red">{error}</p>}
+      {error && <p className="mt-2 text-xs text-signal-red">{error}</p>}
     </Panel>
   );
 }

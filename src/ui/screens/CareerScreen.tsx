@@ -96,7 +96,7 @@ export default function CareerScreen() {
       {!career.retired && <TransferOffersPanel />}
 
       <Panel>
-        <SectionTitle right={<NumberTabular value={formatEuros(player.marketValue)} className="text-broadcast-yellow text-lg" />}>
+        <SectionTitle right={<NumberTabular value={formatEuros(player.marketValue)} className="text-accent text-lg" />}>
           Valeur marchande
         </SectionTitle>
         <ValueChart history={player.marketValueHistory} />
@@ -121,7 +121,7 @@ export default function CareerScreen() {
         <Panel>
           <SectionTitle>Transferts</SectionTitle>
           {career.transfers.length === 0 ? (
-            <p className="text-sm text-broadcast-grey">Aucun transfert pour l'instant.</p>
+            <p className="text-sm text-muted">Aucun transfert pour l'instant.</p>
           ) : (
             <ul className="text-sm space-y-1">
               {career.transfers.map((t, i) => (
@@ -139,15 +139,15 @@ export default function CareerScreen() {
         <Panel>
           <SectionTitle>Sponsors</SectionTitle>
           {proposals.length === 0 && active.length === 0 && (
-            <p className="text-sm text-broadcast-grey">Aucune marque ne s'est encore manifestée : la réputation mondiale ouvre cette porte.</p>
+            <p className="text-sm text-muted">Aucune marque ne s'est encore manifestée : la réputation mondiale ouvre cette porte.</p>
           )}
           {proposals.map((d) => (
-            <div key={d.id} className="mb-3 border border-broadcast-yellow/50 p-3 text-sm">
-              <p className="font-display uppercase tracking-wide text-broadcast-yellow">
-                {d.brand} <span className="text-[10px] text-broadcast-grey">{SPONSOR_KIND_LABELS[d.kind] ?? humanize(d.kind)} · proposition</span>
+            <div key={d.id} className="mb-3 rounded-2xl ring-1 ring-accent/40 bg-accent/[0.04] p-3 text-sm">
+              <p className="font-display uppercase tracking-wide text-accent">
+                {d.brand} <span className="text-[10px] text-muted">{SPONSOR_KIND_LABELS[d.kind] ?? humanize(d.kind)} · proposition</span>
               </p>
               <p>{formatEuros(d.amountYearly)} par an jusqu'au {formatDateFrShort(d.endsOn)}.</p>
-              <p className="text-xs text-broadcast-grey">Obligations : {d.obligations.join(' ; ')}.</p>
+              <p className="text-xs text-muted">Obligations : {d.obligations.join(' ; ')}.</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <Button onClick={() => void answerSponsor(d.id, 'accepter')} disabled={busy}>Signer</Button>
                 <Button variant="secondary" onClick={() => void answerSponsor(d.id, 'negocier')} disabled={busy || d.negotiated}>
@@ -160,9 +160,9 @@ export default function CareerScreen() {
           {active.length > 0 && (
             <ul className="text-sm space-y-1">
               {active.map((d) => (
-                <li key={d.id} className="flex justify-between border-b border-pitch-800 py-1">
-                  <span>{d.brand} <span className="text-xs text-broadcast-grey">{SPONSOR_KIND_LABELS[d.kind] ?? humanize(d.kind)}</span></span>
-                  <span className="text-broadcast-grey">{formatEuros(d.amountYearly)}/an · jusqu'au {formatDateFrShort(d.endsOn)}</span>
+                <li key={d.id} className="flex justify-between border-b border-white/[0.05] py-1">
+                  <span>{d.brand} <span className="text-xs text-muted">{SPONSOR_KIND_LABELS[d.kind] ?? humanize(d.kind)}</span></span>
+                  <span className="text-muted">{formatEuros(d.amountYearly)}/an · jusqu'au {formatDateFrShort(d.endsOn)}</span>
                 </li>
               ))}
             </ul>
@@ -173,15 +173,15 @@ export default function CareerScreen() {
           <SectionTitle>Revenus cumulés</SectionTitle>
           {earnings ? (
             <ul className="text-sm space-y-1">
-              <li className="flex justify-between"><span className="text-broadcast-grey">Salaires</span><span>{formatEuros(earnings.wagesTotal)}</span></li>
-              <li className="flex justify-between"><span className="text-broadcast-grey">Primes</span><span>{formatEuros(earnings.bonusesTotal)}</span></li>
-              <li className="flex justify-between"><span className="text-broadcast-grey">Sponsors</span><span>{formatEuros(earnings.sponsorsTotal)}</span></li>
-              <li className="flex justify-between border-t border-pitch-700 pt-1 font-display uppercase tracking-wide">
-                <span>Total</span><span className="text-broadcast-yellow">{formatEuros(earnings.wagesTotal + earnings.bonusesTotal + earnings.sponsorsTotal)}</span>
+              <li className="flex justify-between"><span className="text-muted">Salaires</span><span>{formatEuros(earnings.wagesTotal)}</span></li>
+              <li className="flex justify-between"><span className="text-muted">Primes</span><span>{formatEuros(earnings.bonusesTotal)}</span></li>
+              <li className="flex justify-between"><span className="text-muted">Sponsors</span><span>{formatEuros(earnings.sponsorsTotal)}</span></li>
+              <li className="flex justify-between border-t border-white/[0.08] pt-1 font-display uppercase tracking-wide">
+                <span>Total</span><span className="text-accent">{formatEuros(earnings.wagesTotal + earnings.bonusesTotal + earnings.sponsorsTotal)}</span>
               </li>
             </ul>
           ) : (
-            <p className="text-sm text-broadcast-grey">Le premier salaire tombe le 1er du mois.</p>
+            <p className="text-sm text-muted">Le premier salaire tombe le 1er du mois.</p>
           )}
         </Panel>
       </div>
@@ -193,7 +193,7 @@ export default function CareerScreen() {
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wide text-broadcast-grey border-b border-pitch-700">
+                <tr className="text-left text-[11px] uppercase tracking-wide text-muted border-b border-white/[0.08]">
                   <th className="py-1 pr-2">Saison</th>
                   <th className="py-1 pr-2">Club</th>
                   <th className="py-1 pr-2 text-right">Cl.</th>
@@ -206,7 +206,7 @@ export default function CareerScreen() {
               </thead>
               <tbody>
                 {[...career.pastSeasons].reverse().map((s) => (
-                  <tr key={s.seasonId} className="border-b border-pitch-800">
+                  <tr key={s.seasonId} className="border-b border-white/[0.05]">
                     <td className="py-1 pr-2">{s.label}</td>
                     <td className="py-1 pr-2">{career.world.clubs[s.clubId]?.shortName ?? s.clubId}</td>
                     <td className="py-1 pr-2 text-right tabular-nums">{s.leagueRank}e</td>
@@ -214,7 +214,7 @@ export default function CareerScreen() {
                     <td className="py-1 pr-2 text-right tabular-nums">{s.stats.total.goals}</td>
                     <td className="py-1 pr-2 text-right tabular-nums">{s.stats.total.assists}</td>
                     <td className="py-1 pr-2 text-right tabular-nums">{s.averageRating.toFixed(2)}</td>
-                    <td className="py-1 pr-2 text-broadcast-grey">{[...s.trophies.map((x) => humanize(x)), ...s.awards.map((a) => humanize(a.kind))].join(', ') || '—'}</td>
+                    <td className="py-1 pr-2 text-muted">{[...s.trophies.map((x) => humanize(x)), ...s.awards.map((a) => humanize(a.kind))].join(', ') || '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -230,11 +230,11 @@ export default function CareerScreen() {
           <SectionTitle>Fin de carrière</SectionTitle>
           {canRetire(career) ? (
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm text-broadcast-grey">Tu peux raccrocher quand tu veux. Le bilan sera figé.</p>
+              <p className="text-sm text-muted">Tu peux raccrocher quand tu veux. Le bilan sera figé.</p>
               <Button variant="danger" onClick={confirmRetirement} disabled={busy}>Prendre ma retraite</Button>
             </div>
           ) : (
-            <p className="text-sm text-broadcast-grey">Retraite possible à partir de 33 ans, en fin de contrat, ou après une blessure de fin de carrière. Imposée à 39 ans.</p>
+            <p className="text-sm text-muted">Retraite possible à partir de 33 ans, en fin de contrat, ou après une blessure de fin de carrière. Imposée à 39 ans.</p>
           )}
         </Panel>
       )}

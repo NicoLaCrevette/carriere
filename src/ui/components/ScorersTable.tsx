@@ -12,11 +12,11 @@ interface ScorersTableProps {
 
 /** Buteurs ou passeurs (§13), la ligne du joueur incarné surlignée si présente. */
 export default function ScorersTable({ rows, clubs, nameOf, playerId, metric }: ScorersTableProps) {
-  if (rows.length === 0) return <p className="text-sm text-broadcast-grey">Personne n'a encore marqué.</p>;
+  if (rows.length === 0) return <p className="text-sm text-muted">Personne n'a encore marqué.</p>;
   return (
     <table className="w-full text-sm">
       <thead>
-        <tr className="text-left text-[11px] uppercase tracking-wide text-broadcast-grey border-b border-pitch-700">
+        <tr className="text-left text-[11px] uppercase tracking-wide text-muted border-b border-white/[0.08]">
           <th className="py-1 pr-2">#</th>
           <th className="py-1 pr-2">Joueur</th>
           <th className="py-1 pr-2">Club</th>
@@ -28,11 +28,11 @@ export default function ScorersTable({ rows, clubs, nameOf, playerId, metric }: 
         {rows.map((r, i) => (
           <tr
             key={r.playerId}
-            className={`border-b border-pitch-800 ${r.playerId === playerId ? 'bg-broadcast-yellow/10 text-broadcast-yellow' : ''}`}
+            className={`border-b border-white/[0.05] ${r.playerId === playerId ? 'bg-accent/10 text-accent' : ''}`}
           >
             <td className="py-1 pr-2 tabular-nums">{i + 1}</td>
             <td className="py-1 pr-2">{nameOf(r.playerId)}</td>
-            <td className="py-1 pr-2 text-broadcast-grey">{clubs[r.clubId]?.shortName ?? r.clubId}</td>
+            <td className="py-1 pr-2 text-muted">{clubs[r.clubId]?.shortName ?? r.clubId}</td>
             <td className="py-1 px-1 text-right font-semibold"><NumberTabular value={metric === 'goals' ? r.goals : r.assists} /></td>
             <td className="py-1 px-1 text-right"><NumberTabular value={r.matches} /></td>
           </tr>

@@ -105,7 +105,7 @@ export default function SettingsScreen() {
       <Panel>
         <SectionTitle
           right={
-            <span className={`text-[11px] uppercase tracking-wide ${info?.gratuit ? 'text-broadcast-green' : proxyStatus === 'pret' ? 'text-broadcast-yellow' : proxyStatus === 'injoignable' ? 'text-broadcast-red' : 'text-broadcast-grey'}`}>
+            <span className={`text-[11px] uppercase tracking-wide ${info?.gratuit ? 'text-signal-green' : proxyStatus === 'pret' ? 'text-accent' : proxyStatus === 'injoignable' ? 'text-signal-red' : 'text-muted'}`}>
               {info?.provider === 'ollama' ? 'Ollama local · gratuit'
                 : info?.provider === 'anthropic' ? 'API Anthropic · payante'
                   : proxyStatus === 'sans_cle' ? 'Proxy en ligne, aucun modèle'
@@ -116,7 +116,7 @@ export default function SettingsScreen() {
           Intelligence artificielle (dialogues et narration)
         </SectionTitle>
         <div className="space-y-3 text-sm">
-          <p className="text-xs text-broadcast-grey">
+          <p className="text-xs text-muted">
             Le jeu est jouable sans rien : sans modèle, il utilise ses textes pré-écrits et un classement par mots-clés.
             Pour des dialogues générés gratuitement, lance Ollama sur ta machine, le proxy le détecte tout seul.
             Une clé Anthropic reste possible, payante, et n'apparaît jamais dans le navigateur.
@@ -127,11 +127,11 @@ export default function SettingsScreen() {
           </label>
 
           {info?.ollama?.disponible ? (
-            <div className="border border-broadcast-green/50 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-broadcast-green">Modèle local, sans frais</p>
-              <p className="text-xs text-broadcast-grey">Ollama répond sur {info.ollama.url}.</p>
+            <div className="rounded-2xl ring-1 ring-signal-green/40 bg-signal-green/[0.04] p-3">
+              <p className="text-[11px] uppercase tracking-wide text-signal-green">Modèle local, sans frais</p>
+              <p className="text-xs text-muted">Ollama répond sur {info.ollama.url}.</p>
               <label className="mt-2 flex flex-col gap-1">
-                <span className="text-[11px] uppercase tracking-wide text-broadcast-grey">Modèle utilisé</span>
+                <span className="text-[11px] uppercase tracking-wide text-muted">Modèle utilisé</span>
                 <select
                   className="input"
                   value={info.models.courant}
@@ -150,19 +150,19 @@ export default function SettingsScreen() {
                   ))}
                 </select>
               </label>
-              <p className="mt-1 text-xs text-broadcast-grey">
+              <p className="mt-1 text-xs text-muted">
                 Un modèle plus gros écrit un meilleur français, un plus petit répond plus vite. Le jeu retombe sur ses textes écrits si le modèle tarde.
               </p>
             </div>
           ) : (
-            <p className="text-xs text-broadcast-grey">
+            <p className="text-xs text-muted">
               Ollama n'a pas été détecté. Lance-le, puis « Vérifier » : le proxy le préfère automatiquement à l'API payante.
             </p>
           )}
 
           <div className="flex flex-wrap items-end gap-2">
             <label className="flex flex-col gap-1 grow">
-              <span className="text-[11px] uppercase tracking-wide text-broadcast-grey">Clé API Anthropic (facultative, payante)</span>
+              <span className="text-[11px] uppercase tracking-wide text-muted">Clé API Anthropic (facultative, payante)</span>
               <input
                 type="password"
                 autoComplete="off"
@@ -188,19 +188,19 @@ export default function SettingsScreen() {
             </Button>
           </div>
           {proxyStatus === 'injoignable' && (
-            <p className="text-xs text-broadcast-red">
+            <p className="text-xs text-signal-red">
               Le proxy local ne répond pas. Ouvre un terminal dans le dossier du jeu et lance <code>npm run server</code>, puis « Vérifier ».
             </p>
           )}
-          <button type="button" className="text-xs text-broadcast-grey underline" onClick={() => setShowLog((v) => !v)}>
+          <button type="button" className="text-xs text-muted underline" onClick={() => setShowLog((v) => !v)}>
             {showLog ? 'Masquer' : 'Afficher'} le journal des appels IA ({llmLog().length})
           </button>
           {showLog && (
-            <ul className="text-xs font-mono space-y-0.5 text-broadcast-grey">
+            <ul className="text-xs font-mono space-y-0.5 text-muted">
               {log.length === 0 && <li>Aucun appel pour l'instant.</li>}
               {log.map((e, i) => (
                 <li key={i}>
-                  {new Date(e.at).toLocaleTimeString('fr-FR')} · {e.task} · <span className={e.source === 'llm' ? 'text-broadcast-green' : e.source === 'error' ? 'text-broadcast-red' : ''}>{e.source}</span> · {e.ms} ms
+                  {new Date(e.at).toLocaleTimeString('fr-FR')} · {e.task} · <span className={e.source === 'llm' ? 'text-signal-green' : e.source === 'error' ? 'text-signal-red' : ''}>{e.source}</span> · {e.ms} ms
                   {e.tokens ? ` · ${e.tokens} jetons` : ''}{e.detail ? ` · ${e.detail}` : ''}
                 </li>
               ))}
@@ -213,7 +213,7 @@ export default function SettingsScreen() {
         <SectionTitle>Voix</SectionTitle>
         <div className="grid sm:grid-cols-2 gap-4 text-sm">
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wide text-broadcast-grey">Mode vocal</span>
+            <span className="text-[11px] uppercase tracking-wide text-muted">Mode vocal</span>
             <select className="input" value={settings.voiceMode} onChange={(e) => settings.setVoiceMode(e.target.value as VoiceMode)}>
               {VOICE_MODES.map((m) => (
                 <option key={m} value={m}>
@@ -223,11 +223,11 @@ export default function SettingsScreen() {
             </select>
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wide text-broadcast-grey">Vitesse de parole ({settings.speechRate.toFixed(1)}×)</span>
+            <span className="text-[11px] uppercase tracking-wide text-muted">Vitesse de parole ({settings.speechRate.toFixed(1)}×)</span>
             <input type="range" min={0.7} max={1.5} step={0.1} value={settings.speechRate} onChange={(e) => settings.setSpeechRate(Number(e.target.value))} />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wide text-broadcast-grey">Synthèse vocale</span>
+            <span className="text-[11px] uppercase tracking-wide text-muted">Synthèse vocale</span>
             <select className="input" value={settings.ttsProvider} onChange={(e) => settings.setTtsProvider(e.target.value as 'webspeech' | 'elevenlabs')}>
               <option value="webspeech">Voix du navigateur (gratuit)</option>
               <option value="elevenlabs">ElevenLabs (clé requise)</option>
@@ -235,7 +235,7 @@ export default function SettingsScreen() {
           </label>
           {settings.ttsProvider === 'elevenlabs' && (
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wide text-broadcast-grey">Clé ElevenLabs (stockée localement)</span>
+              <span className="text-[11px] uppercase tracking-wide text-muted">Clé ElevenLabs (stockée localement)</span>
               <input type="password" autoComplete="off" className="input" value={settings.elevenLabsKey} onChange={(e) => settings.setElevenLabsKey(e.target.value)} placeholder="xi-…" />
             </label>
           )}
@@ -252,7 +252,7 @@ export default function SettingsScreen() {
             Sons d'ambiance (situations, buts, sifflets)
           </label>
         </div>
-        <p className="text-xs text-broadcast-grey mt-2">
+        <p className="text-xs text-muted mt-2">
           Reconnaissance vocale : celle du navigateur (fr-FR) quand elle existe, sinon enregistrement transcrit par le proxy (clé ElevenLabs requise). Tu peux toujours corriger le texte avant d'envoyer.
         </p>
       </Panel>
@@ -261,11 +261,11 @@ export default function SettingsScreen() {
         <SectionTitle>Difficulté</SectionTitle>
         {career ? (
           <p className="text-sm">
-            <span className="font-display uppercase tracking-wide text-broadcast-yellow">{DIFFICULTY_LABELS[career.settings.difficulty]}</span>
-            <span className="text-broadcast-grey"> — fixée à la création de la carrière, non modifiable en cours de route.</span>
+            <span className="font-display uppercase tracking-wide text-accent">{DIFFICULTY_LABELS[career.settings.difficulty]}</span>
+            <span className="text-muted"> — fixée à la création de la carrière, non modifiable en cours de route.</span>
           </p>
         ) : (
-          <p className="text-sm text-broadcast-grey">Choisie lors de la création d'une carrière.</p>
+          <p className="text-sm text-muted">Choisie lors de la création d'une carrière.</p>
         )}
       </Panel>
 
@@ -294,9 +294,9 @@ export default function SettingsScreen() {
         </SectionTitle>
         <ul className="text-sm space-y-1">
           {datasets.map((d) => (
-            <li key={d.id} className="flex justify-between border-b border-pitch-800 py-1">
+            <li key={d.id} className="flex justify-between border-b border-white/[0.05] py-1">
               <span>{d.label}</span>
-              <span className="text-broadcast-grey">{d.referenceSeason}</span>
+              <span className="text-muted">{d.referenceSeason}</span>
             </li>
           ))}
         </ul>

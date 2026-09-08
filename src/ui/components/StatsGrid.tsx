@@ -37,8 +37,8 @@ export default function StatsGrid({ stats, goalkeeper }: StatsGridProps) {
   return (
     <dl className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 text-sm">
       {items.map((it) => (
-        <div key={it.label} className="flex justify-between border-b border-pitch-800 pb-1">
-          <dt className="text-broadcast-grey">{it.label}</dt>
+        <div key={it.label} className="flex justify-between border-b border-white/[0.05] pb-1">
+          <dt className="text-muted">{it.label}</dt>
           <dd className="font-semibold">
             <NumberTabular value={it.value} />
           </dd>

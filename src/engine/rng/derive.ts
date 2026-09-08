@@ -73,3 +73,32 @@ export function matchActionKey(matchId: string, minute: number, actionIndex: num
 export function seedFromString(s: string): Seed {
   return xmur3(s)();
 }
+
+/**
+ * Graine tirée au hasard, pour une nouvelle carrière.
+ *
+ * La graine est ensuite figée dans la sauvegarde : la carrière reste
+ * parfaitement déterministe. Ce tirage sert uniquement à ce que deux carrières
+ * créées avec la même fiche (même nom, même club, même jeu de données) ne
+ * soient pas la même partie.
+ */
+export function randomSeed(): Seed {
+  const crypto = globalThis.crypto;
+  if (crypto?.getRandomValues) return crypto.getRandomValues(new Uint32Array(1))[0]!;
+  return Math.floor(Math.random() * 0x1_0000_0000) >>> 0;
+}
+
+/** Graine en toutes lettres, courte et lisible, pour l'afficher et la ressaisir. */
+export function formatSeed(seed: Seed): string {
+  return seed.toString(36).toUpperCase().padStart(7, '0');
+}
+
+/** Lit une graine saisie à la main (format `formatSeed`, ou un nombre). Renvoie undefined si illisible. */
+export function parseSeed(input: string): Seed | undefined {
+  const s = input.trim().toUpperCase();
+  if (!s) return undefined;
+  if (/^\d+$/.test(s) && Number(s) <= 0xffff_ffff) return Number(s) >>> 0;
+  if (!/^[0-9A-Z]{1,7}$/.test(s)) return undefined;
+  const n = parseInt(s, 36);
+  return Number.isFinite(n) && n >= 0 && n <= 0xffff_ffff ? (n >>> 0) : undefined;
+}

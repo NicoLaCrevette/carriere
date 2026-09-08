@@ -38,6 +38,8 @@ export const CAREER_BALANCE = {
   },
 
   career: {
+    /** Relevés mensuels de progression conservés (≈ 25 saisons). */
+    maxOverallHistory: 300,
     /** Fin de carrière : proposée dès cet âge, imposée à l'âge max. */
     retirementAge: { proposedFrom: 33, forcedAt: 39 },
     /** Nombre de saisons visé (§0 : 15 à 20). */

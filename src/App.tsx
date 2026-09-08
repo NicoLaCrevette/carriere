@@ -71,7 +71,7 @@ export default function App() {
   return (
     <>
       {error && (
-        <div className="fixed top-0 inset-x-0 z-40 flex items-center justify-between gap-4 bg-broadcast-red px-4 py-2 text-sm text-white">
+        <div className="fixed top-0 inset-x-0 z-40 flex items-center justify-between gap-4 bg-signal-red px-4 py-2 text-sm text-white">
           <span>{error}</span>
           <button type="button" onClick={clearError} className="font-display uppercase tracking-wide">
             Fermer

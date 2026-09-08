@@ -18,14 +18,14 @@ export default function Modal() {
           onClick={closeModal}
         >
           <motion.div
-            className="w-full max-w-md border border-pitch-600 bg-pitch-900 p-5"
+            className="w-full max-w-md rounded-card ring-1 ring-white/10 bg-ink-900 p-5 shadow-card"
             initial={{ scale: 0.96, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.96, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-display uppercase tracking-wide text-lg text-white mb-2">{modal.title}</h3>
-            {modal.message && <p className="text-sm text-broadcast-grey mb-4">{modal.message}</p>}
+            {modal.message && <p className="text-sm text-muted mb-4">{modal.message}</p>}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={closeModal}>
                 {modal.cancelLabel ?? 'Annuler'}

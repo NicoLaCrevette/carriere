@@ -2,9 +2,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useUiStore } from '../../store/uiStore';
 
 const KIND_CLASSES: Record<'info' | 'success' | 'error', string> = {
-  info: 'border-broadcast-blue text-broadcast-blue',
-  success: 'border-broadcast-green text-broadcast-green',
-  error: 'border-broadcast-red text-broadcast-red',
+  info: 'border-signal-blue text-signal-blue',
+  success: 'border-signal-green text-signal-green',
+  error: 'border-signal-red text-signal-red',
 };
 
 /** Pile de notifications éphémères, coin bas-droit. */
@@ -20,7 +20,7 @@ export default function ToastStack() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className={`border bg-pitch-900 px-3 py-2 text-sm ${KIND_CLASSES[t.kind]}`}
+            className={`border bg-ink-900 px-3 py-2 text-sm ${KIND_CLASSES[t.kind]}`}
             onClick={() => dismiss(t.id)}
             role="status"
           >

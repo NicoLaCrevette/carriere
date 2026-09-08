@@ -4,12 +4,13 @@ import { selectFormLabel, selectNextMatch, selectPlayerAge, selectPlayerClub, se
 import NumberTabular from './NumberTabular';
 import ReputationStrip from './ReputationStrip';
 import NextMatchCard from './NextMatchCard';
+import PlayerAvatar from './PlayerAvatar';
 
 interface TopBarProps {
   career: CareerState;
 }
 
-/** Bandeau permanent (§4) : date, journée, prochain match, forme, condition, moral, note, réputation. */
+/** Bandeau permanent (§4) : portrait, date, journée, prochain match, jauges, réputation. */
 export default function TopBar({ career }: TopBarProps) {
   const player = career.player;
   const club = selectPlayerClub(career);
@@ -18,31 +19,41 @@ export default function TopBar({ career }: TopBarProps) {
   const age = selectPlayerAge(career);
 
   return (
-    <div className="border-b border-pitch-700 bg-pitch-900">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2 text-sm">
-        <div>
-          <span className="text-broadcast-grey uppercase text-[11px] tracking-wide mr-2">{formatDateFr(career.currentDate)}</span>
-          {matchday > 0 && (
-            <span className="text-broadcast-grey uppercase text-[11px] tracking-wide">J{matchday}</span>
-          )}
+    <div className="border-b border-white/[0.06] bg-ink-950/60 backdrop-blur-xl">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3">
+        <PlayerAvatar
+          {...(player.identity.avatar ? { config: player.identity.avatar } : { id: player.id })}
+          {...(club ? { couleurs: club.colors } : {})}
+          taille={44}
+          anneau
+          alt={`Portrait de ${player.identity.firstName} ${player.identity.lastName}`}
+        />
+
+        <div className="min-w-0">
+          <div className="font-display uppercase tracking-wide leading-tight truncate">
+            {player.identity.firstName} {player.identity.lastName}
+          </div>
+          <div className="text-[11px] text-muted truncate">
+            {age} ans · {club?.name ?? 'sans club'} · {formatDateFr(career.currentDate)}
+            {matchday > 0 && <span className="ml-1.5 rounded-full bg-white/[0.06] px-2 py-0.5">J{matchday}</span>}
+          </div>
         </div>
-        <div className="font-display uppercase tracking-wide">
-          {player.identity.firstName} {player.identity.lastName}
-          <span className="text-broadcast-grey normal-case font-body ml-2">
-            {age} ans · {club?.name ?? '—'}
-          </span>
-        </div>
-        <div className="flex items-center gap-4 ml-auto">
-          <Stat label="Note" value={player.overall} accent />
-          <Stat label="Forme" value={selectFormLabel(career)} />
-          <Stat label="Condition" value={`${Math.round(player.fitness)}`} />
-          <Stat label="Rythme" value={`${Math.round(player.sharpness)}`} />
-          <Stat label="Moral" value={`${Math.round(player.morale)}`} />
+
+        <div className="flex items-center gap-2 ml-auto">
+          <Pastille label="Note" value={player.overall} accent />
+          <Pastille label="Forme" value={selectFormLabel(career)} />
+          <Pastille label="Condition" value={Math.round(player.fitness)} />
+          <Pastille label="Rythme" value={Math.round(player.sharpness)} />
+          <Pastille label="Moral" value={Math.round(player.morale)} />
         </div>
       </div>
+
       <div className="px-4 pb-3">
-        <NextMatchCard match={nextMatch} career={career} compact />
+        <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06] px-4 py-2">
+          <NextMatchCard match={nextMatch} career={career} compact />
+        </div>
       </div>
+
       <div className="px-4 pb-3">
         <ReputationStrip reputation={career.reputation} />
       </div>
@@ -50,11 +61,17 @@ export default function TopBar({ career }: TopBarProps) {
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
+/** Chiffre clé dans une pastille ronde. */
+function Pastille({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
   return (
-    <div className="text-right">
-      <div className="text-[10px] uppercase tracking-wide text-broadcast-grey">{label}</div>
-      <NumberTabular value={value} className={accent ? 'text-broadcast-yellow text-lg' : 'text-white'} />
+    <div
+      className={`flex h-14 w-14 flex-col items-center justify-center rounded-full ring-1 ${
+        accent ? 'bg-accent/10 ring-accent/40' : 'bg-white/[0.03] ring-white/[0.08]'
+      }`}
+      title={label}
+    >
+      <NumberTabular value={value} className={`leading-none ${accent ? 'text-accent text-lg' : 'text-white text-sm'}`} />
+      <span className="mt-0.5 text-[9px] uppercase tracking-wide text-muted">{label}</span>
     </div>
   );
 }

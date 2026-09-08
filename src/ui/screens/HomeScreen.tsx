@@ -48,7 +48,7 @@ export default function HomeScreen() {
         <div className="p-4 space-y-4">
           <CareerSummaryPanel career={career} />
           <Panel>
-            <p className="text-sm text-broadcast-grey">La carrière est terminée. Les écrans restent consultables ; exporte la sauvegarde depuis Réglages pour garder ce palmarès.</p>
+            <p className="text-sm text-muted">La carrière est terminée. Les écrans restent consultables ; exporte la sauvegarde depuis Réglages pour garder ce palmarès.</p>
             <div className="mt-3 flex gap-2">
               <Button variant="secondary" onClick={() => navigate('career')}>Voir la carrière</Button>
               <Button variant="ghost" onClick={() => navigate('media')}>Relire les déclarations</Button>
@@ -112,7 +112,7 @@ export default function HomeScreen() {
         </Panel>
 
         {(openOffers.length > 0 || sponsorProposals.length > 0) && (
-          <Panel className="border-broadcast-yellow/60">
+          <Panel accent>
             <SectionTitle right={<Button variant="ghost" onClick={() => navigate('career')}>Voir dans Carrière</Button>}>À traiter</SectionTitle>
             <ul className="text-sm space-y-1">
               {openOffers.map((o) => (
@@ -131,7 +131,7 @@ export default function HomeScreen() {
         {lastMatch && (
           <Panel>
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm text-broadcast-grey">Tu peux revoir ton dernier match à tout moment.</p>
+              <p className="text-sm text-muted">Tu peux revoir ton dernier match à tout moment.</p>
               <Button variant="ghost" onClick={() => navigate('match')}>Revoir le dernier match</Button>
             </div>
           </Panel>

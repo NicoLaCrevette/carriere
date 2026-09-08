@@ -11,13 +11,36 @@ le moteur, affiche, et persiste.
 - **Une seule sauvegarde active par carrière** (§6.7) : chaque fin de journée
   écrase le slot. Pas de « charger l'état d'avant le match » hors mode bac à sable.
 - **Aucune dépendance de `src/engine` vers `src/ui`, `src/store`, `src/db`.**
-- Direction artistique : sombre, dense, typographie condensée (`font-display`
-  = Barlow Condensed), palette `pitch` et `broadcast` de `tailwind.config.ts`.
-  Habillage broadcast sportif : bandeaux, capitales, chiffres tabulaires,
-  jaune d'accent, rouge pour l'alerte, vert pour le positif. Animations sobres
-  avec Framer Motion (entrées de panneaux, compteur de note, transitions
-  d'écran). Pas de dégradés violets, pas de cartes arrondies façon SaaS.
+- Direction artistique : sombre et épurée, formes rondes. Typographie condensée
+  (`font-display` = Barlow Condensed) pour les titres et les chiffres.
+  Palette de `tailwind.config.ts` : `ink` pour les fonds, `accent` (vert citron)
+  comme unique couleur d'accent, `signal-*` réservées à l'information (rouge
+  alerte, vert positif, ambre avertissement), `muted` pour le texte secondaire.
+  Ne jamais réintroduire un accent concurrent : une seule couleur porte l'action.
+- Vocabulaire de formes : `Panel` (carte `rounded-card`, contour `ring-1
+  ring-white/[0.07]`, ombre basse), `Button` en pilule, pilules de choix
+  arrondies, jauges et barres en `rounded-full`, portraits ronds. Les contours
+  se font au `ring`, pas au `border` : ils ne décalent pas la mise en page.
+  Chiffres clés dans des pastilles rondes. Animations sobres avec Framer Motion.
+- **L'interface explique le moteur, elle ne le double jamais.** `ui/lib/
+  explainAction.ts` ne fait que nommer et trier `ActionOutcome.modifiers` ;
+  `ui/lib/weekBriefing.ts` ne fait que lire `CareerState`. Aucun de ces modules
+  ne calcule une probabilité, une note ou un gain : ce serait une seconde
+  vérité, qui divergerait.
 - Tout le texte en français. Dates via `formatDateFr`.
+
+## Portraits — `ui/lib/avatar.ts` et `components/PlayerAvatar.tsx`
+
+`AvatarConfig` est une donnée d'identité (`Identity.avatar`), donc elle vit dans
+le moteur : des index dans des palettes, jamais des couleurs. Les palettes et le
+dessin sont à l'interface. Un PNJ sans configuration reçoit un portrait déduit
+de son identifiant (`avatarDepuisId`), stable pour toute la carrière.
+
+Deux règles à ne pas contourner : pas de photo de joueur réel (leur image ne
+nous appartient pas), et aucun trait déduit de la nationalité. Ce que l'on
+reprend du réel, ce sont les couleurs du club, qui sont un fait du jeu de
+données. Les identifiants SVG sont préfixés par `useId()` : ils sont globaux au
+document, et deux portraits sur un écran partageraient sinon leurs découpes.
 
 ## `src/db/db.ts` — Dexie
 

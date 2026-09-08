@@ -81,14 +81,14 @@ export default function TransferOffersPanel() {
 
   return (
     <Panel>
-      <SectionTitle right={<span className="text-[11px] uppercase tracking-wide text-broadcast-grey">{window ? `Mercato ${window === 'summer' ? 'd’été' : 'd’hiver'} ouvert` : 'Mercato fermé'}</span>}>
+      <SectionTitle right={<span className="text-[11px] uppercase tracking-wide text-muted">{window ? `Mercato ${window === 'summer' ? 'd’été' : 'd’hiver'} ouvert` : 'Mercato fermé'}</span>}>
         Mercato
       </SectionTitle>
 
       {open.length === 0 ? (
-        <p className="text-sm text-broadcast-grey">Aucune offre sur la table.</p>
+        <p className="text-sm text-muted">Aucune offre sur la table.</p>
       ) : (
-        <p className="mb-2 text-xs text-broadcast-grey">Négocier engage : si le club accepte ta contre-proposition, l'accord est conclu (deux tours au plus).</p>
+        <p className="mb-2 text-xs text-muted">Négocier engage : si le club accepte ta contre-proposition, l'accord est conclu (deux tours au plus).</p>
       )}
       {open.length > 0 && (
         <ul className="space-y-3">
@@ -97,22 +97,22 @@ export default function TransferOffersPanel() {
             const renewal = o.clubId === clubId && o.fee === 0;
             const negotiable = o.negotiationLog.filter((l) => l.from === 'joueur' && /contre/i.test(l.text)).length < 2;
             return (
-              <li key={o.id} className="border border-broadcast-yellow/50 p-3 text-sm">
+              <li key={o.id} className="rounded-2xl ring-1 ring-accent/40 bg-accent/[0.04] p-3 text-sm">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="font-display uppercase tracking-wide text-broadcast-yellow">
+                  <p className="font-display uppercase tracking-wide text-accent">
                     {renewal ? `Prolongation · ${club?.name ?? o.clubId}` : club?.name ?? o.clubId}
-                    <span className="ml-2 text-xs text-broadcast-grey">{stars(o.interest)}</span>
+                    <span className="ml-2 text-xs text-muted">{stars(o.interest)}</span>
                   </p>
-                  <span className="text-xs text-broadcast-grey">expire le {formatDateFrShort(o.expiresOn)}</span>
+                  <span className="text-xs text-muted">expire le {formatDateFrShort(o.expiresOn)}</span>
                 </div>
                 <p className="mt-1">
                   {renewal ? '' : `${o.loan ? 'Prêt' : `Indemnité ${formatEuros(o.fee)}`} · `}
                   {formatEuros(o.wageMonthly)} par mois · {o.years} an{o.years > 1 ? 's' : ''} · {ROLE_LABELS[o.promisedRole]}
                   {o.releaseClause ? ` · clause ${formatEuros(o.releaseClause)}` : ''}
                 </p>
-                {!renewal && <p className="text-xs text-broadcast-grey">{STANCE_LABELS[o.currentClubStance]}{club ? ` · prestige ${club.prestige}` : ''}</p>}
+                {!renewal && <p className="text-xs text-muted">{STANCE_LABELS[o.currentClubStance]}{club ? ` · prestige ${club.prestige}` : ''}</p>}
                 {o.negotiationLog.length > 0 && (
-                  <ul className="mt-1 space-y-0.5 text-xs text-broadcast-grey">
+                  <ul className="mt-1 space-y-0.5 text-xs text-muted">
                     {o.negotiationLog.slice(-4).map((l, i) => (
                       <li key={i}>{formatDateFrShort(l.date)} · {l.from} : {l.text}</li>
                     ))}
@@ -131,27 +131,27 @@ export default function TransferOffersPanel() {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-broadcast-grey mb-1">Clubs qui te suivent</p>
+          <p className="text-[11px] uppercase tracking-wide text-muted mb-1">Clubs qui te suivent</p>
           {interest.length === 0 ? (
-            <p className="text-sm text-broadcast-grey">Personne pour l'instant : joue, marque, fais parler de toi.</p>
+            <p className="text-sm text-muted">Personne pour l'instant : joue, marque, fais parler de toi.</p>
           ) : (
             <ul className="text-sm space-y-0.5">
               {interest.map((i) => (
-                <li key={i.clubId} className="flex justify-between gap-2 border-b border-pitch-800 py-0.5">
-                  <span>{career.world.clubs[i.clubId]?.name ?? i.clubId} <span className="text-xs text-broadcast-grey">{ROLE_LABELS[i.need].toLowerCase()}</span></span>
-                  <span className="text-broadcast-yellow text-xs" title={i.reason}>{stars(i.stars)}</span>
+                <li key={i.clubId} className="flex justify-between gap-2 border-b border-white/[0.05] py-0.5">
+                  <span>{career.world.clubs[i.clubId]?.name ?? i.clubId} <span className="text-xs text-muted">{ROLE_LABELS[i.need].toLowerCase()}</span></span>
+                  <span className="text-accent text-xs" title={i.reason}>{stars(i.stars)}</span>
                 </li>
               ))}
             </ul>
           )}
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-broadcast-grey mb-1">Ta position</p>
+          <p className="text-[11px] uppercase tracking-wide text-muted mb-1">Ta position</p>
           {requested ? (
-            <p className="text-sm text-broadcast-grey">Tu as demandé publiquement à partir. Ton club est ouvert aux offres.</p>
+            <p className="text-sm text-muted">Tu as demandé publiquement à partir. Ton club est ouvert aux offres.</p>
           ) : (
             <>
-              <p className="text-sm text-broadcast-grey mb-2">Demander un transfert rend ta volonté publique : malus immédiats, mais les offres deviennent plus faciles.</p>
+              <p className="text-sm text-muted mb-2">Demander un transfert rend ta volonté publique : malus immédiats, mais les offres deviennent plus faciles.</p>
               <Button variant="danger" onClick={confirmRequest} disabled={busy}>Demander un transfert</Button>
             </>
           )}

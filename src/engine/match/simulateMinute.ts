@@ -7,6 +7,7 @@
  */
 import type { Id, MatchContext, MatchEvent, MatchState, Position } from '../types';
 import type { Rng } from '../rng/mulberry32';
+import { hashKey } from '../rng/derive';
 import { BALANCE } from '../config/balance';
 import { positionCompatibility } from '../config/positions';
 import { clamp, clamp01, fullName, otherSide, pushEvent, scoreFor } from './matchEvents';
@@ -235,9 +236,28 @@ function substitutionFor(ms: MatchState, ctx: MatchContext, side: Side, rng: Rng
   applySubstitution(ms, ctx, side, out, inc, forcedOut ? 'blessure' : 'changement tactique', rng);
 }
 
+/**
+ * Minutes de changement de ce match, pour un côté.
+ *
+ * Les minutes de référence sont décalées de quelques minutes, différemment pour
+ * chaque match et chaque équipe : sans ce décalage tout le monde changerait à la
+ * 58e, la 66e, la 74e… et le joueur remplaçant entrerait toujours aux mêmes
+ * minutes, match après match et carrière après carrière. Le décalage vient d'un
+ * hachage de (graine, match, côté) : il est stable, un rechargement le retrouve.
+ */
+function substitutionWindows(ctx: MatchContext, side: Side): number[] {
+  const jitter = MS.substitutionExtra.jitterMinutes;
+  return (MS.substitutions.typicalMinutes as readonly number[]).map((minute, i) => {
+    const h = hashKey(ctx.seed, `${ctx.match.id}:fenetres:${side}`, i);
+    const decalage = (h % (jitter * 2 + 1)) - jitter;
+    return Math.min(89, Math.max(MS.substitutions.fromMinute + 1, minute + decalage));
+  });
+}
+
 function substitutionsTick(ms: MatchState, ctx: MatchContext, rng: Rng): void {
-  if (ms.addedTime > 0 || !(MS.substitutions.typicalMinutes as readonly number[]).includes(ms.minute)) return;
+  if (ms.addedTime > 0) return;
   for (const side of ['home', 'away'] as const) {
+    if (!substitutionWindows(ctx, side).includes(ms.minute)) continue;
     if (rng.chance(MS.substitutionWindowProb)) substitutionFor(ms, ctx, side, rng);
   }
 }

@@ -7,6 +7,8 @@ import { DIFFICULTY_LABELS } from '../../engine/config/difficulty';
 import { allocationLimits, validateAllocation } from '../../engine/player/createPlayer';
 import { computeOverall } from '../../engine/player/overall';
 import { buildAllocation } from '../../engine/sim/headless';
+import { formatSeed, parseSeed, randomSeed } from '../../engine/rng/derive';
+import { avatarParDefaut } from '../lib/avatar';
 import { NATIONALITIES } from '../../data/nationalities';
 import type { DatasetFile, DatasetClub } from '../../data/schema';
 import { listDatasets, type DatasetEntry } from '../../data/index';
@@ -14,6 +16,7 @@ import { useCareerStore } from '../../store/careerStore';
 import { useUiStore } from '../../store/uiStore';
 import { ARCHETYPE_LABELS, ATTRIBUTE_LABELS, FOOT_LABELS, STARTING_LEVEL_HELP, STARTING_LEVEL_LABELS, formatEuros } from '../lib/labels';
 import Button from '../components/Button';
+import AvatarPicker from '../components/AvatarPicker';
 import Panel from '../components/Panel';
 import SectionTitle from '../components/SectionTitle';
 import NumberTabular from '../components/NumberTabular';
@@ -36,6 +39,11 @@ function defaultDraft(): CareerSetup {
     difficulty: 'exigeant',
     allocation: {},
     datasetId: '',
+    // Chaque carrière tire sa propre graine : deux joueurs de même nom dans le
+    // même club ne vivent pas la même saison. La graine est figée dans la
+    // sauvegarde, donc la carrière reste parfaitement déterministe.
+    seed: randomSeed(),
+    avatar: avatarParDefaut(),
     sandbox: false,
   };
 }
@@ -49,6 +57,7 @@ function eligibleClubs(dataset: DatasetFile, level: StartingLevel): DatasetClub[
 /** Écran de création de carrière (§2), en étapes. */
 export default function NewCareerScreen() {
   const [step, setStep] = useState(0);
+  const [seedInput, setSeedInput] = useState<string | undefined>();
   const [draft, setDraft] = useState<CareerSetup>(defaultDraft);
   const [entries, setEntries] = useState<DatasetEntry[]>([]);
   const [entryId, setEntryId] = useState<string>('');
@@ -157,7 +166,7 @@ export default function NewCareerScreen() {
 
       <div className="flex gap-1 text-[11px] uppercase tracking-wide">
         {STEPS.map((label, i) => (
-          <span key={label} className={`px-2 py-1 ${i === step ? 'bg-broadcast-yellow text-pitch-950' : 'text-broadcast-grey'}`}>
+          <span key={label} className={`px-2 py-1 ${i === step ? 'bg-accent text-ink-950' : 'text-muted'}`}>
             {i + 1}. {label}
           </span>
         ))}
@@ -225,6 +234,14 @@ export default function NewCareerScreen() {
                 </Field>
               </div>
             </div>
+            <div className="border-t border-white/[0.07] pt-4">
+              <SectionTitle>Portrait</SectionTitle>
+              <AvatarPicker
+                value={draft.avatar ?? avatarParDefaut()}
+                onChange={(avatar) => setDraft((d) => ({ ...d, avatar }))}
+                {...(selectedClub ? { couleurs: selectedClub.colors } : {})}
+              />
+            </div>
           </div>
         )}
 
@@ -236,7 +253,7 @@ export default function NewCareerScreen() {
                 <button
                   key={p}
                   onClick={() => setDraft((d) => ({ ...d, position: p, allocation: {} }))}
-                  className={`px-3 py-1.5 text-sm border ${draft.position === p ? 'border-broadcast-yellow text-broadcast-yellow bg-broadcast-yellow/10' : 'border-pitch-600'}`}
+                  className={`rounded-full px-3.5 py-1.5 text-sm ring-1 transition ${draft.position === p ? 'ring-accent text-accent bg-accent/10' : 'ring-white/10 hover:ring-white/25'}`}
                 >
                   {POSITION_LABELS[p]}
                 </button>
@@ -250,14 +267,14 @@ export default function NewCareerScreen() {
                   <button
                     key={a}
                     onClick={() => toggleArchetype(a)}
-                    className={`px-3 py-1.5 text-left text-sm border ${active ? 'border-broadcast-yellow text-broadcast-yellow bg-broadcast-yellow/10' : 'border-pitch-600'}`}
+                    className={`rounded-full px-3.5 py-1.5 text-left text-sm ring-1 transition ${active ? 'ring-accent text-accent bg-accent/10' : 'ring-white/10 hover:ring-white/25'}`}
                   >
                     {ARCHETYPE_LABELS[a]}
                   </button>
                 );
               })}
             </div>
-            <p className="text-xs text-broadcast-grey">{draft.archetypes.length} / 3 sélectionnés</p>
+            <p className="text-xs text-muted">{draft.archetypes.length} / 3 sélectionnés</p>
           </div>
         )}
 
@@ -269,10 +286,10 @@ export default function NewCareerScreen() {
                 <button
                   key={l}
                   onClick={() => setDraft((d) => ({ ...d, startingLevel: l, allocation: {}, clubId: '' }))}
-                  className={`p-3 text-left border ${draft.startingLevel === l ? 'border-broadcast-yellow bg-broadcast-yellow/10' : 'border-pitch-600'}`}
+                  className={`rounded-2xl p-3 text-left ring-1 transition ${draft.startingLevel === l ? 'ring-accent bg-accent/10' : 'ring-white/10 hover:ring-white/25'}`}
                 >
                   <p className="font-display uppercase tracking-wide">{STARTING_LEVEL_LABELS[l]}</p>
-                  <p className="text-xs text-broadcast-grey">{STARTING_LEVEL_HELP[l]}</p>
+                  <p className="text-xs text-muted">{STARTING_LEVEL_HELP[l]}</p>
                 </button>
               ))}
             </div>
@@ -282,7 +299,7 @@ export default function NewCareerScreen() {
                 <button
                   key={diff}
                   onClick={() => setDraft((d) => ({ ...d, difficulty: diff }))}
-                  className={`p-3 text-left border ${draft.difficulty === diff ? 'border-broadcast-yellow bg-broadcast-yellow/10' : 'border-pitch-600'}`}
+                  className={`rounded-2xl p-3 text-left ring-1 transition ${draft.difficulty === diff ? 'ring-accent bg-accent/10' : 'ring-white/10 hover:ring-white/25'}`}
                 >
                   <p className="font-display uppercase tracking-wide">{DIFFICULTY_LABELS[diff as Difficulty]}</p>
                 </button>
@@ -301,8 +318,8 @@ export default function NewCareerScreen() {
                 </option>
               ))}
             </select>
-            {datasetLoading && <p className="text-sm text-broadcast-grey">Chargement du jeu de données…</p>}
-            {datasetError && <p className="text-sm text-broadcast-red">{datasetError}</p>}
+            {datasetLoading && <p className="text-sm text-muted">Chargement du jeu de données…</p>}
+            {datasetError && <p className="text-sm text-signal-red">{datasetError}</p>}
 
             {dataset && (
               <>
@@ -312,10 +329,10 @@ export default function NewCareerScreen() {
                     <button
                       key={c.id}
                       onClick={() => setDraft((d) => ({ ...d, clubId: c.id }))}
-                      className={`p-3 text-left border ${draft.clubId === c.id ? 'border-broadcast-yellow bg-broadcast-yellow/10' : 'border-pitch-600'}`}
+                      className={`rounded-2xl p-3 text-left ring-1 transition ${draft.clubId === c.id ? 'ring-accent bg-accent/10' : 'ring-white/10 hover:ring-white/25'}`}
                     >
                       <p className="font-display uppercase tracking-wide">{c.name}</p>
-                      <p className="text-xs text-broadcast-grey">{c.city} · Prestige {c.prestige}</p>
+                      <p className="text-xs text-muted">{c.city} · Prestige {c.prestige}</p>
                     </button>
                   ))}
                 </div>
@@ -334,16 +351,16 @@ export default function NewCareerScreen() {
             </div>
             <div className="flex items-center justify-between text-sm">
               <span>
-                Points restants : <NumberTabular value={remaining} className={remaining < 0 ? 'text-broadcast-red' : 'text-broadcast-yellow'} />
+                Points restants : <NumberTabular value={remaining} className={remaining < 0 ? 'text-signal-red' : 'text-accent'} />
               </span>
               <span>
-                Note globale estimée : <NumberTabular value={previewOverall} className="text-broadcast-yellow text-lg" />
+                Note globale estimée : <NumberTabular value={previewOverall} className="text-accent text-lg" />
               </span>
             </div>
             {(['GB'].includes(draft.position) ? (['physique', 'mental', 'gardien'] as const) : (['technique', 'physique', 'mental'] as const)).map(
               (group) => (
                 <div key={group}>
-                  <h4 className="text-[11px] uppercase tracking-wide text-broadcast-grey mb-1">{group}</h4>
+                  <h4 className="text-[11px] uppercase tracking-wide text-muted mb-1">{group}</h4>
                   <div className="grid sm:grid-cols-2 gap-x-6">
                     {ATTRIBUTE_GROUPS[group].map((key) => {
                       const alloc = draft.allocation[key] ?? 0;
@@ -352,7 +369,7 @@ export default function NewCareerScreen() {
                       return (
                         <div key={key} className="flex items-center gap-2 py-1 text-sm">
                           <span className="flex-1 truncate">{ATTRIBUTE_LABELS[key]}</span>
-                          <span className="text-broadcast-grey w-8 text-right tabular-nums">{base}</span>
+                          <span className="text-muted w-8 text-right tabular-nums">{base}</span>
                           <button className="btn-step" disabled={alloc <= 0} onClick={() => setAllocation(key, -1)}>
                             −
                           </button>
@@ -361,7 +378,7 @@ export default function NewCareerScreen() {
                             +
                           </button>
                           <span className="w-10 text-right font-semibold tabular-nums">{Math.min(99, base + alloc)}</span>
-                          <span className="text-broadcast-grey text-xs w-14">plaf. {cap}</span>
+                          <span className="text-muted text-xs w-14">plaf. {cap}</span>
                         </div>
                       );
                     })}
@@ -370,7 +387,7 @@ export default function NewCareerScreen() {
               ),
             )}
             {allocationErrors.length > 0 && (
-              <ul className="text-broadcast-red text-xs space-y-0.5">
+              <ul className="text-signal-red text-xs space-y-0.5">
                 {allocationErrors.map((e, i) => (
                   <li key={i}>{e}</li>
                 ))}
@@ -388,7 +405,7 @@ export default function NewCareerScreen() {
               </strong>{' '}
               — {draft.startAge} ans — {POSITION_LABELS[draft.position]}
             </p>
-            <p className="text-broadcast-grey">
+            <p className="text-muted">
               {draft.archetypes.map((a) => ARCHETYPE_LABELS[a]).join(', ')} · {FOOT_LABELS[draft.foot]} · {draft.heightCm} cm / {draft.weightKg} kg
             </p>
             <p>
@@ -397,18 +414,51 @@ export default function NewCareerScreen() {
             <p>
               Club : <strong>{selectedClub?.name ?? '—'}</strong>
               {selectedClub && (
-                <span className="text-broadcast-grey"> · Prestige {selectedClub.prestige} · Budget transfert {formatEuros(selectedClub.transferBudget)}</span>
+                <span className="text-muted"> · Prestige {selectedClub.prestige} · Budget transfert {formatEuros(selectedClub.transferBudget)}</span>
               )}
             </p>
             <p>
-              Note globale de départ : <NumberTabular value={previewOverall} className="text-broadcast-yellow text-lg" />
+              Note globale de départ : <NumberTabular value={previewOverall} className="text-accent text-lg" />
             </p>
-            <label className="flex items-center gap-2 text-broadcast-grey">
+            <label className="flex items-center gap-2 text-muted">
               <input type="checkbox" checked={draft.sandbox} onChange={(e) => setDraft((d) => ({ ...d, sandbox: e.target.checked }))} />
               Mode bac à sable (désactive le palmarès et les records, rechargements libres)
             </label>
-            {busy && <p className="text-broadcast-yellow">Création de la carrière…</p>}
-            {error && <p className="text-broadcast-red">{error}</p>}
+
+            <div className="space-y-1 border-t border-white/[0.08] pt-3">
+              <SectionTitle>Graine</SectionTitle>
+              <p className="text-muted text-xs">
+                Elle décide de tous les tirages de la carrière. Deux carrières de graines différentes ne se ressemblent pas ;
+                deux carrières de même graine et même fiche sont identiques.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  className="input w-36 font-mono uppercase tracking-widest"
+                  value={seedInput ?? formatSeed(draft.seed ?? 0)}
+                  onChange={(e) => {
+                    setSeedInput(e.target.value);
+                    const parsed = parseSeed(e.target.value);
+                    if (parsed !== undefined) setDraft((d) => ({ ...d, seed: parsed }));
+                  }}
+                  aria-label="Graine de la carrière"
+                />
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    const s = randomSeed();
+                    setDraft((d) => ({ ...d, seed: s }));
+                    setSeedInput(formatSeed(s));
+                  }}
+                >
+                  Retirer au hasard
+                </Button>
+              </div>
+              {seedInput !== undefined && parseSeed(seedInput) === undefined && (
+                <p className="text-signal-red text-xs">Graine illisible : garde des chiffres et des lettres A-Z.</p>
+              )}
+            </div>
+            {busy && <p className="text-accent">Création de la carrière…</p>}
+            {error && <p className="text-signal-red">{error}</p>}
           </div>
         )}
       </Panel>
@@ -434,7 +484,7 @@ export default function NewCareerScreen() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1 text-sm">
-      <span className="text-[11px] uppercase tracking-wide text-broadcast-grey">{label}</span>
+      <span className="text-[11px] uppercase tracking-wide text-muted">{label}</span>
       {children}
     </label>
   );

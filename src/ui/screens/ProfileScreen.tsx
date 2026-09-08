@@ -1,23 +1,92 @@
+import type { AvatarConfig } from '../../engine/types';
 import { ATTRIBUTE_GROUPS } from '../../engine/types';
+import { useState } from 'react';
 import { useCareerStore } from '../../store/careerStore';
 import { formatDateFrShort } from '../../engine/calendar/dates';
 import { ATTRIBUTE_LABELS, formatEuros, formatRating } from '../lib/labels';
 import Panel from '../components/Panel';
 import SectionTitle from '../components/SectionTitle';
 import AttributeRadar from '../components/AttributeRadar';
+import ProgressionPanel from '../components/ProgressionPanel';
+import PlayerAvatar from '../components/PlayerAvatar';
+import AvatarPicker from '../components/AvatarPicker';
+import Button from '../components/Button';
+import { avatarParDefaut } from '../lib/avatar';
 import AttributeRow from '../components/AttributeRow';
 import NumberTabular from '../components/NumberTabular';
 
 /** Profil joueur (§3, §10) : radar par groupe, attributs avec XP, état de forme, potentiel flou, palmarès, historique. */
 export default function ProfileScreen() {
   const career = useCareerStore((s) => s.career);
+  const mutate = useCareerStore((s) => s.mutate);
+  const busy = useCareerStore((s) => s.busy);
+  // Brouillon local : `mutate` pose un verrou et sauvegarde à chaque appel, donc
+  // on ne l'appelle qu'une fois, à la fermeture, et non à chaque clic de couleur.
+  const [brouillonPortrait, setBrouillonPortrait] = useState<AvatarConfig | null>(null);
   if (!career) return null;
   const player = career.player;
   const isGoalkeeper = player.identity.position === 'GB';
   const groups = (isGoalkeeper ? (['technique', 'physique', 'mental', 'gardien'] as const) : (['technique', 'physique', 'mental'] as const));
 
+  const club = career.world.clubs[player.contract.clubId];
+
   return (
     <div className="p-4 space-y-4">
+      <Panel>
+        <div className="flex flex-wrap items-center gap-4">
+          <PlayerAvatar
+            {...(player.identity.avatar ? { config: player.identity.avatar } : { id: player.id })}
+            {...(club ? { couleurs: club.colors } : {})}
+            taille={72}
+            anneau
+            alt={`Portrait de ${player.identity.firstName} ${player.identity.lastName}`}
+          />
+          <div>
+            <h1 className="font-display uppercase tracking-wide text-2xl leading-none">
+              {player.identity.firstName} {player.identity.lastName}
+            </h1>
+            <p className="mt-1 text-sm text-muted">
+              {player.identity.position} · {club?.name ?? 'sans club'} · {player.identity.heightCm} cm
+            </p>
+          </div>
+          <div className="ml-auto flex items-center gap-4">
+            <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() => {
+                if (brouillonPortrait) {
+                  const choisi = brouillonPortrait;
+                  setBrouillonPortrait(null);
+                  void mutate('Portrait', (c) => { c.player.identity.avatar = choisi; });
+                } else {
+                  setBrouillonPortrait(player.identity.avatar ?? avatarParDefaut());
+                }
+              }}
+            >
+              {brouillonPortrait ? 'Enregistrer' : 'Mon portrait'}
+            </Button>
+            <div className="text-right">
+              <div className="text-[10px] uppercase tracking-wide text-muted">Note globale</div>
+              <div className="font-display text-4xl text-accent tabular-nums leading-none">{player.overall}</div>
+            </div>
+          </div>
+        </div>
+
+        {brouillonPortrait && (
+          <div className="mt-5 border-t border-white/[0.07] pt-5">
+            <AvatarPicker
+              value={brouillonPortrait}
+              onChange={setBrouillonPortrait}
+              {...(club ? { couleurs: club.colors } : {})}
+            />
+          </div>
+        )}
+      </Panel>
+
+      <Panel>
+        <ProgressionPanel player={player} />
+      </Panel>
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel>
           <SectionTitle>État actuel</SectionTitle>
@@ -30,7 +99,7 @@ export default function ProfileScreen() {
             <Stat label="Confiance" value={`${Math.round(player.confidence)}`} />
           </div>
           <SectionTitle>Potentiel</SectionTitle>
-          <p className="text-sm text-broadcast-grey italic">
+          <p className="text-sm text-muted italic">
             {player.potentialEstimate.statement || 'Le staff n\'a pas encore d\'avis tranché.'}
           </p>
 
@@ -47,7 +116,7 @@ export default function ProfileScreen() {
           <SectionTitle>Radar des attributs</SectionTitle>
           {groups.map((g) => (
             <div key={g} className="mb-4">
-              <p className="text-[11px] uppercase tracking-wide text-broadcast-grey text-center mb-1">{g}</p>
+              <p className="text-[11px] uppercase tracking-wide text-muted text-center mb-1">{g}</p>
               <AttributeRadar attributes={player.attributes} keys={ATTRIBUTE_GROUPS[g]} />
             </div>
           ))}
@@ -68,8 +137,8 @@ export default function ProfileScreen() {
           <SectionTitle>Traits</SectionTitle>
           <ul className="space-y-1 text-sm">
             {player.traits.map((t) => (
-              <li key={t.id} className={t.polarity === 'positif' ? 'text-broadcast-green' : t.polarity === 'negatif' ? 'text-broadcast-red' : 'text-broadcast-grey'}>
-                <strong>{t.label}</strong> — {t.description} <span className="text-broadcast-grey">({t.origin})</span>
+              <li key={t.id} className={t.polarity === 'positif' ? 'text-signal-green' : t.polarity === 'negatif' ? 'text-signal-red' : 'text-muted'}>
+                <strong>{t.label}</strong> — {t.description} <span className="text-muted">({t.origin})</span>
               </li>
             ))}
           </ul>
@@ -80,7 +149,7 @@ export default function ProfileScreen() {
         <Panel>
           <SectionTitle>Palmarès</SectionTitle>
           {player.trophies.length === 0 && player.awards.length === 0 ? (
-            <p className="text-sm text-broadcast-grey">Rien pour l'instant.</p>
+            <p className="text-sm text-muted">Rien pour l'instant.</p>
           ) : (
             <ul className="space-y-1 text-sm">
               {player.trophies.map((t, i) => (
@@ -96,11 +165,11 @@ export default function ProfileScreen() {
         <Panel>
           <SectionTitle>Historique des saisons</SectionTitle>
           {player.history.length === 0 ? (
-            <p className="text-sm text-broadcast-grey">Première saison en cours.</p>
+            <p className="text-sm text-muted">Première saison en cours.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wide text-broadcast-grey border-b border-pitch-700">
+                <tr className="text-left text-[11px] uppercase tracking-wide text-muted border-b border-white/[0.08]">
                   <th className="py-1 pr-2">Saison</th>
                   <th className="py-1 pr-2 text-right">Rang</th>
                   <th className="py-1 pr-2 text-right">Buts</th>
@@ -110,7 +179,7 @@ export default function ProfileScreen() {
               </thead>
               <tbody>
                 {player.history.map((h) => (
-                  <tr key={h.seasonId} className="border-b border-pitch-800">
+                  <tr key={h.seasonId} className="border-b border-white/[0.05]">
                     <td className="py-1 pr-2">{h.label}</td>
                     <td className="py-1 pr-2 text-right tabular-nums">{h.leagueRank}</td>
                     <td className="py-1 pr-2 text-right tabular-nums">{h.stats.total.goals}</td>
@@ -130,8 +199,8 @@ export default function ProfileScreen() {
 function Stat({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wide text-broadcast-grey">{label}</div>
-      <NumberTabular value={value} className={accent ? 'text-broadcast-yellow text-xl' : 'text-white text-lg'} />
+      <div className="text-[10px] uppercase tracking-wide text-muted">{label}</div>
+      <NumberTabular value={value} className={accent ? 'text-accent text-xl' : 'text-white text-lg'} />
     </div>
   );
 }

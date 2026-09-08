@@ -26,7 +26,7 @@ export default function ClubScreen() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel className="lg:col-span-2">
           <SectionTitle>{club.name}</SectionTitle>
-          <p className="text-sm text-broadcast-grey mb-2">
+          <p className="text-sm text-muted mb-2">
             {club.city} · Prestige {club.prestige} · {club.stadium.name} ({club.stadium.capacity.toLocaleString('fr-FR')} places)
           </p>
           <Gauge label="Moral de l'équipe" value={club.teamMorale} />
@@ -36,11 +36,11 @@ export default function ClubScreen() {
           {coach ? (
             <>
               <p className="font-display uppercase tracking-wide">{coach.firstName} {coach.lastName}</p>
-              <p className="text-xs text-broadcast-grey mb-2">{club.tactic.formation} · {club.tactic.mentality.replace(/_/g, ' ')}</p>
+              <p className="text-xs text-muted mb-2">{club.tactic.formation} · {club.tactic.mentality.replace(/_/g, ' ')}</p>
               <Gauge label="Confiance envers toi" value={career.player.coachTrust} />
             </>
           ) : (
-            <p className="text-sm text-broadcast-grey">Coach inconnu.</p>
+            <p className="text-sm text-muted">Coach inconnu.</p>
           )}
           <p className="text-sm mt-2">
             Statut : <NumberTabular value={SQUAD_STATUS_LABELS[career.player.squadStatus]} />
@@ -51,11 +51,11 @@ export default function ClubScreen() {
       <Panel>
         <SectionTitle>Hiérarchie au poste ({POSITION_LABELS[career.player.identity.position]})</SectionTitle>
         {hierarchy.length === 0 ? (
-          <p className="text-sm text-broadcast-grey">Hiérarchie non encore établie.</p>
+          <p className="text-sm text-muted">Hiérarchie non encore établie.</p>
         ) : (
           <ol className="space-y-1 text-sm list-decimal list-inside">
             {hierarchy.map((p) => (
-              <li key={p.id} className={p.id === career.player.id ? 'text-broadcast-yellow' : ''}>
+              <li key={p.id} className={p.id === career.player.id ? 'text-accent' : ''}>
                 {p.identity.firstName} {p.identity.lastName} — <NumberTabular value={p.overall} />
               </li>
             ))}
@@ -65,7 +65,7 @@ export default function ClubScreen() {
 
       <Panel>
         <SectionTitle>Effectif</SectionTitle>
-        <SquadList byPosition={byPosition} playerId={career.player.id} asOf={career.currentDate} />
+        <SquadList byPosition={byPosition} playerId={career.player.id} asOf={career.currentDate} {...(club ? { couleurs: club.colors } : {})} />
       </Panel>
     </div>
   );

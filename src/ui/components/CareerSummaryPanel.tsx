@@ -21,30 +21,30 @@ export default function CareerSummaryPanel({ career }: { career: CareerState }) 
     ['Déclarations retenues', s.quotes],
   ];
   return (
-    <Panel className="border-broadcast-yellow/60">
+    <Panel accent>
       <SectionTitle>{career.retired ? 'Fin de carrière' : 'Bilan à ce jour'}</SectionTitle>
       <p className="font-display uppercase tracking-wide text-lg">
         {p.identity.firstName} {p.identity.lastName}
-        <span className="ml-2 text-sm text-broadcast-grey">{s.clubs.join(' · ')}</span>
+        <span className="ml-2 text-sm text-muted">{s.clubs.join(' · ')}</span>
       </p>
-      <p className="mt-1 text-sm italic text-broadcast-yellow">{s.verdict}</p>
+      <p className="mt-1 text-sm italic text-accent">{s.verdict}</p>
       <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-3">
         {cells.map(([label, value]) => (
-          <div key={label} className="flex justify-between border-b border-pitch-800 py-1">
-            <dt className="text-broadcast-grey">{label}</dt>
+          <div key={label} className="flex justify-between border-b border-white/[0.05] py-1">
+            <dt className="text-muted">{label}</dt>
             <dd>{typeof value === 'number' ? <NumberTabular value={value} /> : value}</dd>
           </div>
         ))}
       </dl>
       {(s.trophies.length > 0 || s.awards.length > 0) && (
         <p className="mt-3 text-sm">
-          <span className="text-broadcast-grey">Palmarès : </span>
+          <span className="text-muted">Palmarès : </span>
           {[...s.trophies.map((t) => humanize(t)), ...s.awards.map((a) => `${humanize(a.kind)}${a.rank ? ` (${a.rank}e)` : ''}`)].join(', ')}
         </p>
       )}
       {s.traits.length > 0 && (
         <p className="mt-1 text-sm">
-          <span className="text-broadcast-grey">Traits : </span>
+          <span className="text-muted">Traits : </span>
           {s.traits.join(', ')}
         </p>
       )}

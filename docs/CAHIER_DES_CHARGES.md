@@ -19,7 +19,7 @@ La simulation (stats, classements, xG, forme, blessures, valeur marchande, progr
 ## 1. Stack technique
 
 - **Front** : React 18 + TypeScript + Vite.
-- **Style** : Tailwind CSS. Direction artistique : sombre, dense, typographie condensée type broadcast sportif (habillage Canal+/Prime Video plutôt que dashboard SaaS). Animations sobres (Framer Motion), pas de dégradés violets génériques.
+- **Style** : Tailwind CSS. Direction artistique : sombre, **épurée, en formes rondes** — cartes arrondies, pilules, pastilles, portraits ronds ; une seule couleur d'accent (vert citron), les autres couleurs réservées à l'information. Typographie condensée pour les titres et les chiffres. Animations sobres (Framer Motion), pas de dégradés violets génériques. *(Remplace la direction « broadcast sportif, bordures nettes » retenue au départ : à l'usage elle rendait le jeu dense et froid.)*
 - **État** : Zustand avec middleware `persist`.
 - **Persistance** : IndexedDB via Dexie. Plusieurs slots de sauvegarde, export/import JSON, autosave à chaque fin de journée de jeu.
 - **Simulation** : TypeScript pur, dossier `src/engine/`, **zéro dépendance React**, testable avec Vitest. RNG seedé (mulberry32) pour que chaque sauvegarde soit reproductible.

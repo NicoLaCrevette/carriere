@@ -10,7 +10,7 @@
  * en mode interactif, puis `completePlayerMatch`). Mute `state` comme le reste
  * du moteur ; l'interface clone avant d'appeler.
  */
-import type { CareerState, DayKind, DayResult, Id, ISODate, TrainingFocus } from '../types';
+import type { AttributeKey, CareerState, DayKind, DayResult, Id, ISODate, TrainingFocus } from '../types';
 import { BALANCE } from '../config/balance';
 import { addDays } from '../calendar/dates';
 import { advanceDay, messageMatchsDeFond, playerMatchOfDay } from '../calendar/advanceDay';
@@ -42,13 +42,34 @@ export interface WeekResult {
   resume: {
     entrainements: number;
     gains: { key: string; from: number; to: number }[];
+    /**
+     * Ce que l'entraînement a réellement rapporté, y compris quand aucun point
+     * entier n'est tombé. Sans cela, la plupart des semaines n'affichent rien
+     * et le joueur croit ne rien gagner alors qu'il progresse.
+     */
+    progression: ProgressionAttribut[];
     blessures: number;
     messages: string[];
     conditionAvant: number;
     conditionApres: number;
     rythmeAvant: number;
     rythmeApres: number;
+    globalAvant: number;
+    globalApres: number;
   };
+}
+
+/** Progression d'un attribut sur la semaine : points gagnés et avancée vers le point suivant. */
+export interface ProgressionAttribut {
+  key: AttributeKey;
+  /** Valeur de l'attribut à la fin de la semaine. */
+  valeur: number;
+  /** Avancée vers le point suivant, 0-1, à la fin de la semaine. */
+  xp: number;
+  /** XP gagnée pendant la semaine (1 = un point entier d'attribut). */
+  xpGagne: number;
+  /** Points entiers gagnés pendant la semaine. */
+  pointsGagnes: number;
 }
 
 /**
@@ -103,6 +124,39 @@ function messagesUtiles(day: DayResult): string[] {
   return day.messages.filter((m) => !clesDeGain.has(enTeteDe(m)) && !estBruitDeFond(m));
 }
 
+/**
+ * Ce que les séances de la semaine ont rapporté, attribut par attribut.
+ *
+ * Un point entier d'attribut demande plusieurs semaines : n'afficher que les
+ * points entiers revient à ne rien afficher la plupart du temps. On remonte donc
+ * l'XP accumulée, qui est la vraie mesure de ce qu'a rapporté une séance.
+ */
+function cumulerProgression(days: DayResult[], state: CareerState, max: number): ProgressionAttribut[] {
+  const xpGagne = new Map<AttributeKey, number>();
+  for (const day of days) {
+    for (const [key, xp] of Object.entries(day.training?.xpAdded ?? {}) as [AttributeKey, number][]) {
+      if (!xp) continue;
+      xpGagne.set(key, (xpGagne.get(key) ?? 0) + xp);
+    }
+  }
+  const pointsGagnes = new Map<AttributeKey, number>();
+  for (const day of days) {
+    for (const gain of day.attributeGains) {
+      pointsGagnes.set(gain.key, (pointsGagnes.get(gain.key) ?? 0) + (gain.to - gain.from));
+    }
+  }
+  return [...xpGagne.entries()]
+    .map(([key, gagne]) => ({
+      key,
+      valeur: state.player.attributes[key] ?? 0,
+      xp: state.player.attributeXp[key] ?? 0,
+      xpGagne: gagne,
+      pointsGagnes: pointsGagnes.get(key) ?? 0,
+    }))
+    .sort((a, b) => b.pointsGagnes - a.pointsGagnes || b.xpGagne - a.xpGagne)
+    .slice(0, max);
+}
+
 /** Fusionne les gains d'une même clé : premier `from`, dernier `to`, ordre d'apparition. */
 function cumulerGains(days: DayResult[]): { key: string; from: number; to: number }[] {
   const parCle = new Map<string, { key: string; from: number; to: number }>();
@@ -128,6 +182,7 @@ export function advanceWeek(
   hooks?: { onDay?: (result: DayResult, state: CareerState) => void },
 ): WeekResult {
   const from = state.currentDate;
+  const globalAvant = state.player.overall;
   const conditionAvant = state.player.fitness;
   const rythmeAvant = state.player.sharpness;
   const days: DayResult[] = [];
@@ -201,12 +256,15 @@ export function advanceWeek(
     resume: {
       entrainements: days.filter((d) => d.training).length,
       gains: cumulerGains(days),
+      progression: cumulerProgression(days, state, W.maxProgression),
       blessures: days.reduce((total, d) => total + d.newInjuries.length, 0),
       messages: messages.slice(-W.maxMessages),
       conditionAvant,
       conditionApres: state.player.fitness,
       rythmeAvant,
       rythmeApres: state.player.sharpness,
+      globalAvant,
+      globalApres: state.player.overall,
     },
   };
   if (matchId) result.matchId = matchId;

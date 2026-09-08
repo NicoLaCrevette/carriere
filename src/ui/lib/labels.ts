@@ -8,6 +8,7 @@
  * `humanize` les rend lisibles par défaut, et quelques recouvrements
  * (`*_OVERRIDES`) améliorent la ponctuation des plus fréquemment affichés.
  */
+import { TRAINING_FOCUS_LABELS } from '../../engine/player/trainingTargets';
 import type {
   Archetype, AttributeKey, DayKind, Foot, InjuryType, MatchActionId, MatchEventType, NationalStage, OutcomeKind,
   Position, ReputationKey, SituationKind, StartingLevel, TrainingFocus,
@@ -232,7 +233,9 @@ export function actionLabel(action: MatchActionId): string {
 }
 
 export function trainingFocusLabel(focus: TrainingFocus): string {
-  return humanize(focus);
+  // Les libellés accentués vivent avec les cibles d'entraînement ; `humanize`
+  // rendait « jeu de tete » et « coups de pied arretes ».
+  return TRAINING_FOCUS_LABELS[focus] ?? humanize(focus);
 }
 
 export function positionOrDash(p: Position | undefined): string {

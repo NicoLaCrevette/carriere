@@ -133,17 +133,28 @@ npx tsx src/scripts/validateDataset.ts src/data/leagues/real/ligue1-2026-27.json
 
 ## Comment se joue une journée
 
-- **Accueil** : la semaine est l'unité de jeu. Tu choisis un plan
-  d'entraînement (une séance dominante et une intensité, ou tu laisses le staff
-  décider), tu lances la semaine, et le jeu s'arrête tout seul dès qu'il se
-  passe quelque chose : un match à jouer, ou quelqu'un qui veut te parler. Le
-  bilan de semaine dit ce que tu as gagné, où en sont ta condition et ton
-  rythme, et ce qui est arrivé.
+- **Accueil** : la semaine est l'unité de jeu. Elle s'ouvre sur un point de
+  situation — le rang de ton club, l'adversaire et dans combien de jours, ce
+  qu'il faut surveiller (condition, rythme, moral, série noire, blessure) — puis
+  tu choisis un plan d'entraînement (une séance dominante et une intensité, ou
+  tu laisses le staff décider), tu lances la semaine, et le jeu s'arrête tout
+  seul dès qu'il se passe quelque chose : un match à jouer, ou quelqu'un qui
+  veut te parler.
+- **Ce que l'entraînement rapporte** : le bilan de semaine montre l'XP gagnée
+  attribut par attribut, avec la barre de progression vers le point suivant
+  (« Finition 60 · 11 % vers 61 »). Un point entier demande plusieurs semaines
+  de la même séance : sans cette barre, la plupart des semaines semblaient ne
+  rien rapporter. L'écran Profil met les débuts et aujourd'hui côte à côte, avec
+  la courbe de la note globale et les attributs les plus progressés.
 - **Jour de match** : « Jouer le match (minute par minute) » ouvre le direct.
   Le match défile ; sur chaque situation clé, tu écris ou dis ce que tu fais,
   avec un timer (« Laisser faire » = action par défaut). L'intention est
   classée, le moteur tire le résultat avec des probabilités plafonnées, puis la
-  narration (commentateur, coach, capitaine, public) commente. « Simuler la fin
+  narration (commentateur, coach, capitaine, public) commente. **Chaque action
+  dit pourquoi elle a marché ou non** : la probabilité, le tirage qui a décidé,
+  et ce qui a pesé — distance, densité, pression, fraîcheur, adversaire direct,
+  marquage, plafond du §6. Le bilan d'après-match reprend la même lecture pour
+  toutes les décisions. « Simuler la fin
   du match » termine le match automatiquement. Le direct est sauvegardé à
   chaque situation : recharger reprend au même point, avec le même tirage.
 - **Après le match** : bilan (note, cinq regards, décisions), titres de presse
@@ -200,6 +211,17 @@ respecter les cibles de distribution (médiane de note 6.3, un jeune attaquant
 entre 4 et 9 buts, plafonds de probabilité jamais dépassés). Variable
 `CARRIERE_SEASONS` pour réduire pendant le développement.
 
+## Portraits
+
+Chaque joueur a un portrait rond dessiné en SVG, sans image ni requête réseau.
+Le tien se choisit à la création (peau, cheveux, coiffure, barbe, accessoire) ;
+celui des coéquipiers et des PNJ est déduit de leur identifiant, donc stable
+toute la carrière.
+
+Ce qui vient du réel, c'est le **maillot** : les couleurs du club sont une
+donnée du jeu de données. Les visages, eux, sont générés — la photo d'un joueur
+réel ne nous appartient pas — et rien n'y est déduit de la nationalité.
+
 ## Structure
 
 ```
@@ -220,3 +242,9 @@ Chaque tirage vient de `hash(graine de carrière, portée, index)`. Recharger
 une sauvegarde et redonner la même réponse produit exactement le même
 résultat : il n'existe aucun chemin, par le dialogue ou par le rechargement,
 vers un but.
+
+Chaque carrière tire **sa propre graine** à la création, affichée et modifiable
+au récapitulatif. Deux carrières de même fiche (même nom, même club, même jeu
+de données) mais de graines différentes ne se ressemblent pas ; deux carrières
+de même graine et même fiche sont rigoureusement identiques. Noter sa graine
+permet de rejouer exactement la même carrière.

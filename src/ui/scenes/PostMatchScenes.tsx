@@ -11,10 +11,10 @@ import Panel from '../components/Panel';
 import SectionTitle from '../components/SectionTitle';
 
 const TONE_CLASSES: Record<string, string> = {
-  elogieux: 'text-broadcast-green',
+  elogieux: 'text-signal-green',
   neutre: 'text-white',
-  critique: 'text-broadcast-red',
-  moqueur: 'text-broadcast-red',
+  critique: 'text-signal-red',
+  moqueur: 'text-signal-red',
 };
 
 export default function PostMatchScenes({ day }: { day: DayResult }) {
@@ -44,7 +44,7 @@ export default function PostMatchScenes({ day }: { day: DayResult }) {
           <ul className="space-y-1">
             {headlines.map((h, i) => (
               <li key={i} className="flex flex-wrap items-baseline gap-2">
-                <span className="w-28 shrink-0 text-[10px] uppercase tracking-wide text-broadcast-grey">{h.outlet}</span>
+                <span className="w-28 shrink-0 text-[10px] uppercase tracking-wide text-muted">{h.outlet}</span>
                 <span className={`font-display uppercase tracking-wide ${TONE_CLASSES[h.tone] ?? 'text-white'}`}>« {h.title} »</span>
               </li>
             ))}

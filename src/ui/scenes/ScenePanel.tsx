@@ -42,13 +42,13 @@ export default function ScenePanel({ filter, title = 'Prises de parole' }: Scene
       <SectionTitle>{title}</SectionTitle>
       <ul className="space-y-2">
         {visible.map((s) => (
-          <li key={sceneKey(s)} className="flex flex-wrap items-center justify-between gap-2 border-b border-pitch-800 pb-2">
+          <li key={sceneKey(s)} className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.05] pb-2">
             <div>
               <p className="font-display uppercase tracking-wide text-sm">
                 {s.title}
-                {s.mandatory ? <span className="ml-2 text-[10px] text-broadcast-red">obligatoire</span> : null}
+                {s.mandatory ? <span className="ml-2 text-[10px] text-signal-red">obligatoire</span> : null}
               </p>
-              <p className="text-xs text-broadcast-grey">{KIND_HINTS[s.kind]}</p>
+              <p className="text-xs text-muted">{KIND_HINTS[s.kind]}</p>
             </div>
             <div className="flex gap-2">
               <Button onClick={() => open(s)}>Répondre</Button>
@@ -57,7 +57,7 @@ export default function ScenePanel({ filter, title = 'Prises de parole' }: Scene
           </li>
         ))}
       </ul>
-      {error && <p className="mt-2 text-xs text-broadcast-red">{error}</p>}
+      {error && <p className="mt-2 text-xs text-signal-red">{error}</p>}
     </Panel>
   );
 }

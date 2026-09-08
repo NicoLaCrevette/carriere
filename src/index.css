@@ -7,14 +7,31 @@
 }
 
 body {
-  @apply bg-pitch-950 text-white font-body antialiased;
+  @apply bg-ink-950 text-white font-body antialiased;
+  /* Deux halos très diffus : le fond n'est plus un aplat, sans rien coûter en lisibilité. */
+  background-image:
+    radial-gradient(80rem 40rem at 12% -10%, rgb(201 242 77 / 0.06), transparent 60%),
+    radial-gradient(60rem 36rem at 100% 0%, rgb(107 164 255 / 0.05), transparent 55%);
+  background-attachment: fixed;
 }
 
 @layer components {
   .input {
-    @apply bg-pitch-800 border border-pitch-600 px-3 py-2 text-sm text-white focus:border-broadcast-yellow focus:outline-none;
+    @apply bg-ink-850 rounded-xl border border-ink-600 px-3 py-2 text-sm text-white
+      placeholder:text-ink-400 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition;
   }
   .btn-step {
-    @apply h-6 w-6 border border-pitch-600 text-white text-sm leading-none hover:border-broadcast-yellow disabled:opacity-30 disabled:cursor-not-allowed;
+    @apply h-7 w-7 rounded-full border border-ink-600 text-white text-sm leading-none
+      hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed transition;
   }
+  /* Pastille ronde : la brique de base du nouvel habillage. */
+  .pastille {
+    @apply inline-flex items-center justify-center rounded-full;
+  }
+}
+
+/* Barres de défilement discrètes, pour ne pas casser les arrondis. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.ink.600') transparent;
 }

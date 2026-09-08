@@ -15,10 +15,10 @@ const CHANNEL_LABELS: Partial<Record<InteractionChannel, string>> = {
 };
 
 const TONE_CLASSES: Record<string, string> = {
-  elogieux: 'text-broadcast-green',
+  elogieux: 'text-signal-green',
   neutre: 'text-white',
-  critique: 'text-broadcast-red',
-  moqueur: 'text-broadcast-red',
+  critique: 'text-signal-red',
+  moqueur: 'text-signal-red',
 };
 
 /** Médias (§13) : titres de presse, journal des citations avec leur analyse et leur impact. */
@@ -46,16 +46,16 @@ export default function MediaScreen() {
       <Panel>
         <SectionTitle>Titres de presse</SectionTitle>
         {press.length === 0 ? (
-          <p className="text-sm text-broadcast-grey">Pas encore de titre à ton sujet.</p>
+          <p className="text-sm text-muted">Pas encore de titre à ton sujet.</p>
         ) : (
-          <ul className="divide-y divide-pitch-800">
+          <ul className="divide-y divide-white/[0.05]">
             {press.map((p) => (
               <li key={p.id} className="py-2">
-                <p className="text-xs text-broadcast-grey">{formatDateFr(p.date)} · vs {p.opponent}</p>
+                <p className="text-xs text-muted">{formatDateFr(p.date)} · vs {p.opponent}</p>
                 <ul className="mt-1 space-y-0.5">
                   {p.headlines.map((h, i) => (
                     <li key={i} className="flex flex-wrap items-baseline gap-2">
-                      <span className="w-28 shrink-0 text-[10px] uppercase tracking-wide text-broadcast-grey">{h.outlet}</span>
+                      <span className="w-28 shrink-0 text-[10px] uppercase tracking-wide text-muted">{h.outlet}</span>
                       <span className={`font-display uppercase tracking-wide ${TONE_CLASSES[h.tone] ?? 'text-white'}`}>« {h.title} »</span>
                     </li>
                   ))}
@@ -69,26 +69,26 @@ export default function MediaScreen() {
       <Panel>
         <SectionTitle>Journal des citations</SectionTitle>
         {quotes.length === 0 ? (
-          <p className="text-sm text-broadcast-grey">Tu n'as encore rien déclaré publiquement. Tout ce que tu diras sera retenu.</p>
+          <p className="text-sm text-muted">Tu n'as encore rien déclaré publiquement. Tout ce que tu diras sera retenu.</p>
         ) : (
-          <ul className="divide-y divide-pitch-800">
+          <ul className="divide-y divide-white/[0.05]">
             {quotes.map((q) => {
               const npc = q.npcId ? career.world.npcs[q.npcId] : undefined;
               const deltas = Object.entries(q.appliedDeltas ?? {}).filter(([, v]) => (v ?? 0) !== 0);
               return (
                 <li key={q.id} className="py-2 space-y-1">
-                  <p className="text-xs text-broadcast-grey">
+                  <p className="text-xs text-muted">
                     {formatDateFr(q.date)} · {CHANNEL_LABELS[q.channel] ?? humanize(q.channel)}{npc ? ` · ${npc.firstName} ${npc.lastName}` : ''} · {q.context}
                   </p>
                   <p className="text-sm">« {q.text} »</p>
-                  <p className="text-xs text-broadcast-grey italic">{q.analysis.interpretation}</p>
+                  <p className="text-xs text-muted italic">{q.analysis.interpretation}</p>
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
                     {analysisBadges(q.analysis).map((b, j) => (
-                      <span key={j} className={b.good ? 'text-broadcast-green' : 'text-broadcast-red'}>{b.label} {b.good ? '✔' : '✘'}</span>
+                      <span key={j} className={b.good ? 'text-signal-green' : 'text-signal-red'}>{b.label} {b.good ? '✔' : '✘'}</span>
                     ))}
-                    <span className="text-broadcast-grey">score {q.analysis.communication_score.toFixed(1)}/10</span>
+                    <span className="text-muted">score {q.analysis.communication_score.toFixed(1)}/10</span>
                     {deltas.map(([k, v]) => (
-                      <span key={k} className={`tabular-nums ${(v ?? 0) >= 0 ? 'text-broadcast-green' : 'text-broadcast-red'}`}>{REPUTATION_LABELS[k as keyof typeof REPUTATION_LABELS]} {formatSigned(v ?? 0, 1)}</span>
+                      <span key={k} className={`tabular-nums ${(v ?? 0) >= 0 ? 'text-signal-green' : 'text-signal-red'}`}>{REPUTATION_LABELS[k as keyof typeof REPUTATION_LABELS]} {formatSigned(v ?? 0, 1)}</span>
                     ))}
                   </div>
                 </li>
@@ -103,9 +103,9 @@ export default function MediaScreen() {
           <SectionTitle>Promesses publiques</SectionTitle>
           <ul className="space-y-1 text-sm">
             {[...career.promises].reverse().slice(0, 10).map((p) => (
-              <li key={p.id} className="flex flex-wrap justify-between gap-2 border-b border-pitch-800 py-1">
+              <li key={p.id} className="flex flex-wrap justify-between gap-2 border-b border-white/[0.05] py-1">
                 <span>« {p.text} »</span>
-                <span className={`text-xs uppercase tracking-wide ${p.status === 'tenue' ? 'text-broadcast-green' : p.status === 'rompue' ? 'text-broadcast-red' : 'text-broadcast-grey'}`}>
+                <span className={`text-xs uppercase tracking-wide ${p.status === 'tenue' ? 'text-signal-green' : p.status === 'rompue' ? 'text-signal-red' : 'text-muted'}`}>
                   {humanize(p.status)} · échéance {formatDateFr(p.deadline)}
                 </span>
               </li>

@@ -20,14 +20,14 @@ const CATEGORY_LABELS: Record<Category, string> = {
 
 const CATEGORY_CLASSES: Record<Category, string> = {
   match: 'text-white',
-  transfert: 'text-broadcast-yellow',
-  blessure: 'text-broadcast-red',
-  contrat: 'text-broadcast-yellow',
-  selection: 'text-broadcast-green',
-  trophee: 'text-broadcast-green',
-  reputation: 'text-broadcast-grey',
+  transfert: 'text-accent',
+  blessure: 'text-signal-red',
+  contrat: 'text-accent',
+  selection: 'text-signal-green',
+  trophee: 'text-signal-green',
+  reputation: 'text-muted',
   vie: 'text-white',
-  systeme: 'text-broadcast-grey',
+  systeme: 'text-muted',
 };
 
 const PAGE = 40;
@@ -61,16 +61,16 @@ export default function CareerJournalPanel({ career }: { career: CareerState }) 
         <Panel>
           <SectionTitle>Histoires en cours</SectionTitle>
           {open.length === 0 ? (
-            <p className="text-sm text-broadcast-grey">Rien en suspens pour l'instant.</p>
+            <p className="text-sm text-muted">Rien en suspens pour l'instant.</p>
           ) : (
             <ul className="space-y-1 text-sm">
               {open.map((s) => (
-                <li key={s.id} className="flex flex-wrap justify-between gap-2 border-b border-pitch-800 py-1">
+                <li key={s.id} className="flex flex-wrap justify-between gap-2 border-b border-white/[0.05] py-1">
                   <span>
-                    <span className="text-broadcast-yellow">{s.title}</span>
-                    <span className="text-xs text-broadcast-grey"> — {s.log[s.log.length - 1]?.text ?? 'ouverte'}</span>
+                    <span className="text-accent">{s.title}</span>
+                    <span className="text-xs text-muted"> — {s.log[s.log.length - 1]?.text ?? 'ouverte'}</span>
                   </span>
-                  <span className="text-xs text-broadcast-grey">
+                  <span className="text-xs text-muted">
                     depuis le {formatDateFrShort(s.startedOn)}
                     {s.deadline ? ` · échéance ${formatDateFrShort(s.deadline)}` : ''}
                   </span>
@@ -79,7 +79,7 @@ export default function CareerJournalPanel({ career }: { career: CareerState }) 
             </ul>
           )}
           {closed.length > 0 && (
-            <ul className="mt-2 space-y-0.5 text-xs text-broadcast-grey">
+            <ul className="mt-2 space-y-0.5 text-xs text-muted">
               {closed.map((s) => (
                 <li key={s.id}>
                   {formatDateFrShort(s.startedOn)} · {s.title} — {s.resolution?.text ?? s.status}
@@ -93,7 +93,7 @@ export default function CareerJournalPanel({ career }: { career: CareerState }) 
       <Panel>
         <SectionTitle
           right={
-            <span className="text-[11px] uppercase tracking-wide text-broadcast-grey">
+            <span className="text-[11px] uppercase tracking-wide text-muted">
               {entries.length} entrée{entries.length > 1 ? 's' : ''}
             </span>
           }
@@ -109,8 +109,8 @@ export default function CareerJournalPanel({ career }: { career: CareerState }) 
                 setFilter(c);
                 setLimit(PAGE);
               }}
-              className={`border px-2 py-0.5 text-[11px] uppercase tracking-wide ${
-                filter === c ? 'border-broadcast-yellow text-broadcast-yellow' : 'border-pitch-700 text-broadcast-grey hover:text-white'
+              className={`rounded-full px-2.5 py-0.5 text-[11px] uppercase tracking-wide transition ${
+                filter === c ? 'bg-accent text-ink-950' : 'ring-1 ring-white/10 text-muted hover:text-white'
               }`}
             >
               {c === 'tout' ? 'Tout' : CATEGORY_LABELS[c]}
@@ -118,20 +118,20 @@ export default function CareerJournalPanel({ career }: { career: CareerState }) 
           ))}
         </div>
         {entries.length === 0 ? (
-          <p className="text-sm text-broadcast-grey">Rien de consigné pour l'instant.</p>
+          <p className="text-sm text-muted">Rien de consigné pour l'instant.</p>
         ) : (
           <>
             <ul className="space-y-0.5 text-sm">
               {entries.slice(0, limit).map((l, i) => (
-                <li key={`${l.date}-${i}`} className="flex gap-2 border-b border-pitch-800 py-1">
-                  <span className="w-24 shrink-0 text-xs text-broadcast-grey tabular-nums">{formatDateFrShort(l.date)}</span>
+                <li key={`${l.date}-${i}`} className="flex gap-2 border-b border-white/[0.05] py-1">
+                  <span className="w-24 shrink-0 text-xs text-muted tabular-nums">{formatDateFrShort(l.date)}</span>
                   <span className={`w-20 shrink-0 text-[10px] uppercase tracking-wide ${CATEGORY_CLASSES[l.category]}`}>{CATEGORY_LABELS[l.category]}</span>
                   <span className="grow">{l.text}</span>
                 </li>
               ))}
             </ul>
             {entries.length > limit && (
-              <button type="button" className="mt-2 text-xs text-broadcast-grey underline" onClick={() => setLimit((v) => v + PAGE)}>
+              <button type="button" className="mt-2 text-xs text-muted underline" onClick={() => setLimit((v) => v + PAGE)}>
                 Afficher {Math.min(PAGE, entries.length - limit)} entrées de plus
               </button>
             )}

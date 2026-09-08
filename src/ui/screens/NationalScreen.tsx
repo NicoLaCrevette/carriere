@@ -51,17 +51,17 @@ export default function NationalScreen() {
   return (
     <div className="p-4 space-y-4">
       <Panel>
-        <SectionTitle right={national.lockedIn ? <span className="text-[11px] uppercase tracking-wide text-broadcast-grey">Sélection verrouillée</span> : null}>
+        <SectionTitle right={national.lockedIn ? <span className="text-[11px] uppercase tracking-wide text-muted">Sélection verrouillée</span> : null}>
           Sélection {countryName(national.countryCode)}
         </SectionTitle>
-        <p className="font-display uppercase tracking-wide text-xl text-broadcast-yellow mb-1">{NATIONAL_STAGE_LABELS[national.stage]}</p>
-        <p className="text-sm text-broadcast-grey mb-3">{STAGE_HINTS[national.stage]}</p>
+        <p className="font-display uppercase tracking-wide text-xl text-accent mb-1">{NATIONAL_STAGE_LABELS[national.stage]}</p>
+        <p className="text-sm text-muted mb-3">{STAGE_HINTS[national.stage]}</p>
         <div className="grid grid-cols-3 gap-4 text-sm max-w-sm">
           <Stat label="Sélections" value={national.caps} />
           <Stat label="Buts" value={national.goals} />
           <Stat label="Passes" value={national.assists} />
         </div>
-        <ul className="mt-3 text-sm space-y-1 text-broadcast-grey">
+        <ul className="mt-3 text-sm space-y-1 text-muted">
           {selectionneur && <li>Sélectionneur : {selectionneur.firstName} {selectionneur.lastName}</li>}
           {national.firstCallOn && <li>Première convocation : {formatDateFr(national.firstCallOn)}</li>}
           {national.lastCallOn && <li>Dernière convocation : {formatDateFr(national.lastCallOn)}</li>}
@@ -70,7 +70,7 @@ export default function NationalScreen() {
         </ul>
         {switchable && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-broadcast-grey">Double nationalité : tu peux encore choisir.</span>
+            <span className="text-xs text-muted">Double nationalité : tu peux encore choisir.</span>
             {otherCountries.map((c) => (
               <Button key={c} variant="secondary" onClick={() => confirmSwitch(c)}>Jouer pour {countryName(c)}</Button>
             ))}
@@ -82,13 +82,13 @@ export default function NationalScreen() {
         <Panel>
           <SectionTitle>Matchs à venir</SectionTitle>
           {upcoming.length === 0 ? (
-            <p className="text-sm text-broadcast-grey">Aucun match international programmé pour toi.</p>
+            <p className="text-sm text-muted">Aucun match international programmé pour toi.</p>
           ) : (
             <ul className="text-sm space-y-1">
               {upcoming.map((m) => (
-                <li key={m.id} className="flex justify-between border-b border-pitch-800 py-1">
+                <li key={m.id} className="flex justify-between border-b border-white/[0.05] py-1">
                   <span>{career.world.clubs[m.homeClubId]?.name ?? m.homeClubId} – {career.world.clubs[m.awayClubId]?.name ?? m.awayClubId}</span>
-                  <span className="text-broadcast-grey">{formatDateFr(m.date)}</span>
+                  <span className="text-muted">{formatDateFr(m.date)}</span>
                 </li>
               ))}
             </ul>
@@ -97,18 +97,18 @@ export default function NationalScreen() {
         <Panel>
           <SectionTitle>Matchs joués</SectionTitle>
           {played.length === 0 ? (
-            <p className="text-sm text-broadcast-grey">Pas encore de match en sélection.</p>
+            <p className="text-sm text-muted">Pas encore de match en sélection.</p>
           ) : (
             <ul className="text-sm space-y-1">
               {played.map((m) => {
                 const r = m.result!;
                 const rep = r.playerReport;
                 return (
-                  <li key={m.id} className="flex justify-between border-b border-pitch-800 py-1">
+                  <li key={m.id} className="flex justify-between border-b border-white/[0.05] py-1">
                     <span>
-                      {career.world.clubs[m.homeClubId]?.name ?? m.homeClubId} <span className="text-broadcast-yellow tabular-nums">{r.homeGoals}-{r.awayGoals}</span> {career.world.clubs[m.awayClubId]?.name ?? m.awayClubId}
+                      {career.world.clubs[m.homeClubId]?.name ?? m.homeClubId} <span className="text-accent tabular-nums">{r.homeGoals}-{r.awayGoals}</span> {career.world.clubs[m.awayClubId]?.name ?? m.awayClubId}
                     </span>
-                    <span className="text-broadcast-grey">{formatDateFr(m.date)}{rep ? ` · ${rep.minutesPlayed} min · note ${rep.rating.toFixed(1)}` : ''}</span>
+                    <span className="text-muted">{formatDateFr(m.date)}{rep ? ` · ${rep.minutesPlayed} min · note ${rep.rating.toFixed(1)}` : ''}</span>
                   </li>
                 );
               })}
@@ -122,9 +122,9 @@ export default function NationalScreen() {
           <SectionTitle>Parcours en sélection</SectionTitle>
           <ul className="text-sm space-y-1">
             {stageEvents.map((e) => (
-              <li key={e.id} className="border-b border-pitch-800 py-1">
-                <span className="text-broadcast-grey">{formatDateFr(e.date)} · </span>{e.title}
-                {typeof e.facts.raison === 'string' && <span className="text-broadcast-grey"> — {e.facts.raison}</span>}
+              <li key={e.id} className="border-b border-white/[0.05] py-1">
+                <span className="text-muted">{formatDateFr(e.date)} · </span>{e.title}
+                {typeof e.facts.raison === 'string' && <span className="text-muted"> — {e.facts.raison}</span>}
               </li>
             ))}
           </ul>
@@ -137,7 +137,7 @@ export default function NationalScreen() {
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wide text-broadcast-grey">{label}</div>
+      <div className="text-[10px] uppercase tracking-wide text-muted">{label}</div>
       <NumberTabular value={value} className="text-lg" />
     </div>
   );

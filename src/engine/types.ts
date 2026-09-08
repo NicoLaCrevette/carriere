@@ -125,6 +125,30 @@ export type AttributeXp = Record<AttributeKey, number>;
 // 3. Identité, joueur incarné, joueurs PNJ
 // ═══════════════════════════════════════════════════════════════════════════
 
+/** Coiffures, pilosités et accessoires d'un portrait de joueur. */
+export const COIFFURES = ['court', 'boucles', 'rase', 'mi_long', 'afro', 'chignon', 'tresses', 'degarni'] as const;
+export type Coiffure = (typeof COIFFURES)[number];
+export const PILOSITES = ['aucune', 'bouc', 'barbe_courte', 'moustache', 'barbe_pleine'] as const;
+export type Pilosite = (typeof PILOSITES)[number];
+export const ACCESSOIRES_AVATAR = ['aucun', 'bandeau', 'boucle_oreille'] as const;
+export type AccessoireAvatar = (typeof ACCESSOIRES_AVATAR)[number];
+
+/**
+ * Portrait du joueur : des index dans des palettes, pas des couleurs.
+ *
+ * C'est une donnée d'identité au même titre que la taille, donc elle vit ici ;
+ * les palettes et le dessin sont à l'interface (`ui/lib/avatar.ts`).
+ */
+export interface AvatarConfig {
+  /** Index dans la palette de teintes de peau. */
+  peau: number;
+  /** Index dans la palette de couleurs de cheveux. */
+  cheveux: number;
+  coiffure: Coiffure;
+  pilosite: Pilosite;
+  accessoire: AccessoireAvatar;
+}
+
 export interface Identity {
   firstName: string;
   lastName: string;
@@ -139,6 +163,8 @@ export interface Identity {
   foot: Foot;
   heightCm: number;
   weightKg: number;
+  /** Portrait choisi à la création. Absent pour les PNJ : il est déduit de leur identifiant. */
+  avatar?: AvatarConfig;
   /** 1 à 3 archétypes. Vide pour les PNJ non décrits. */
   archetypes: Archetype[];
 }
@@ -352,6 +378,13 @@ export interface Player {
   contract: Contract;
   marketValue: Euros;
   marketValueHistory: ValuePoint[];
+  /**
+   * Relevé mensuel de la note globale et des attributs, pour montrer la
+   * progression. Sans lui, un joueur qui gagne dix points de note en trois
+   * saisons ne le voit jamais : chaque semaine prise seule ne bouge pas.
+   * Absent des sauvegardes antérieures : toujours lire avec `?? []`.
+   */
+  overallHistory?: OverallPoint[];
   seasonStats: SeasonStats;
   careerStats: Stats;
   history: SeasonRecord[];
@@ -384,6 +417,13 @@ export interface PlayerCounters {
   lastCountedMatchId?: Id;
   /** Depuis quand la cote supporters est ≥ au seuil « chouchou ». */
   supportersHighSince?: ISODate;
+}
+
+/** Relevé de progression : la note globale à une date, et les attributs de ce jour-là. */
+export interface OverallPoint {
+  date: ISODate;
+  overall: number;
+  attributes: Attributes;
 }
 
 export interface ValuePoint {
@@ -1540,6 +1580,7 @@ export interface CareerSetup {
   difficulty: Difficulty;
   /** Répartition des 40 points, bornée par âge et poste. */
   allocation: Partial<Attributes>;
+  avatar?: AvatarConfig;
   datasetId: Id;
   seed?: Seed;
   sandbox?: boolean;

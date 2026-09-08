@@ -13,7 +13,7 @@ const GRID_COLOR = '#1b2530';
 
 /** Courbe SVG maison de la valeur marchande (§11, CareerScreen). */
 export default function ValueChart({ history, width = 640, height = 220 }: ValueChartProps) {
-  if (history.length === 0) return <p className="text-sm text-broadcast-grey">Aucun historique pour l'instant.</p>;
+  if (history.length === 0) return <p className="text-sm text-muted">Aucun historique pour l'instant.</p>;
   const pad = 32;
   const values = history.map((p) => p.value);
   const min = Math.min(...values, 0);

@@ -18,7 +18,7 @@ export default function DayRecap({ result }: DayRecapProps) {
         {result.attributeGains.length > 0 && (
           <ul className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
             {result.attributeGains.map((g, i) => (
-              <li key={`${g.key}-${i}`} className="text-broadcast-green tabular-nums">
+              <li key={`${g.key}-${i}`} className="text-signal-green tabular-nums">
                 {ATTRIBUTE_LABELS[g.key]} : {g.from} → {g.to}
               </li>
             ))}
@@ -27,14 +27,14 @@ export default function DayRecap({ result }: DayRecapProps) {
         {result.newInjuries.length > 0 && (
           <ul className="space-y-1">
             {result.newInjuries.map((inj) => (
-              <li key={inj.id} className="text-broadcast-red">
+              <li key={inj.id} className="text-signal-red">
                 Blessure : {inj.type} — {inj.announcedDays} jours annoncés.
               </li>
             ))}
           </ul>
         )}
         {result.reputationChanges.length > 0 && (
-          <ul className="space-y-1 text-broadcast-grey">
+          <ul className="space-y-1 text-muted">
             {result.reputationChanges.map((r, i) => (
               <li key={i}>
                 {r.key} : {formatSigned(r.delta)} ({r.reason})
@@ -43,13 +43,13 @@ export default function DayRecap({ result }: DayRecapProps) {
           </ul>
         )}
         {result.messages.length > 0 ? (
-          <ul className="space-y-1 text-broadcast-grey">
+          <ul className="space-y-1 text-muted">
             {result.messages.map((m, i) => (
               <li key={i}>— {m}</li>
             ))}
           </ul>
         ) : (
-          <p className="text-broadcast-grey">Journée tranquille, rien à signaler.</p>
+          <p className="text-muted">Journée tranquille, rien à signaler.</p>
         )}
       </div>
     </div>

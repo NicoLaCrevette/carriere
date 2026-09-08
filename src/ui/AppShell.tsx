@@ -17,7 +17,7 @@ interface AppShellProps {
   children: ReactNode;
 }
 
-/** Bandeau de navigation supérieur + écran courant. Habillage broadcast : capitales, bordures nettes. */
+/** Bandeau de navigation supérieur + écran courant. Onglets en pilules, fond translucide. */
 export default function AppShell({ children }: AppShellProps) {
   const screen = useUiStore((s) => s.screen);
   const navigate = useUiStore((s) => s.navigate);
@@ -26,15 +26,15 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <nav className="flex items-center gap-1 border-b border-pitch-700 bg-pitch-950 px-4 py-2 overflow-x-auto">
-        <span className="font-display uppercase tracking-widest text-broadcast-yellow mr-4 shrink-0">Carrière</span>
+      <nav className="sticky top-0 z-30 flex items-center gap-1 border-b border-white/[0.06] bg-ink-950/85 px-4 py-2 overflow-x-auto backdrop-blur-xl">
+        <span className="font-display uppercase tracking-widest text-accent mr-4 shrink-0">Carrière</span>
         {NAV_ITEMS.map((item) => (
           <button
             key={item.screen}
             type="button"
             onClick={() => navigate(item.screen)}
-            className={`px-3 py-1.5 text-xs font-display uppercase tracking-wide shrink-0 transition-colors ${
-              screen === item.screen ? 'bg-broadcast-yellow text-pitch-950' : 'text-broadcast-grey hover:text-white'
+            className={`rounded-full px-3.5 py-1.5 text-xs font-display uppercase tracking-wide shrink-0 transition ${
+              screen === item.screen ? 'bg-accent text-ink-950' : 'text-muted hover:text-white hover:bg-white/[0.06]'
             }`}
           >
             {item.label}
@@ -51,7 +51,7 @@ export default function AppShell({ children }: AppShellProps) {
               onConfirm: quit,
             })
           }
-          className="ml-auto px-3 py-1.5 text-xs font-display uppercase tracking-wide text-broadcast-red hover:text-red-400 shrink-0"
+          className="ml-auto rounded-full px-3.5 py-1.5 text-xs font-display uppercase tracking-wide text-signal-red hover:bg-signal-red/10 shrink-0 transition"
         >
           Quitter
         </button>

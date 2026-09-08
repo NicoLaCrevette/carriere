@@ -174,6 +174,10 @@ function monthlyMarketValue(state: CareerState, age: number, result: DayResult):
   const before = p.marketValue;
   p.marketValue = computeMarketValue(p, age, club, league, state.world.marketInflation, state.currentDate);
   p.marketValueHistory.push({ date: state.currentDate, value: p.marketValue });
+  // Même cadence pour la progression : un point par mois suffit à la lire, et ne pèse rien.
+  // Un point par mois, plafonné à une carrière entière : la sauvegarde ne gonfle pas.
+  p.overallHistory = [...(p.overallHistory ?? []), { date: state.currentDate, overall: p.overall, attributes: { ...p.attributes } }]
+    .slice(-BALANCE.career.maxOverallHistory);
   if (p.marketValue !== before) result.messages.push(`Valeur marchande : ${Math.round(p.marketValue / 1000)} k€.`);
 }
 

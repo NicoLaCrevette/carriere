@@ -10,9 +10,9 @@ interface LeagueTableProps {
 }
 
 const RESULT_COLOR: Record<'V' | 'N' | 'D', string> = {
-  V: 'text-broadcast-green',
-  N: 'text-broadcast-grey',
-  D: 'text-broadcast-red',
+  V: 'text-signal-green',
+  N: 'text-muted',
+  D: 'text-signal-red',
 };
 
 /** Classement complet (§13), club du joueur surligné, zones Europe/relégation marquées. */
@@ -22,7 +22,7 @@ export default function LeagueTable({ table, clubs, highlightClubId, europeCount
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-[11px] uppercase tracking-wide text-broadcast-grey border-b border-pitch-700">
+          <tr className="text-left text-[11px] uppercase tracking-wide text-muted border-b border-white/[0.08]">
             <th className="py-1 pr-2">#</th>
             <th className="py-1 pr-2">Club</th>
             <th className="py-1 px-1 text-right">J</th>
@@ -40,11 +40,11 @@ export default function LeagueTable({ table, clubs, highlightClubId, europeCount
           {table.map((row, i) => {
             const rank = i + 1;
             const isHighlight = row.clubId === highlightClubId;
-            const zone = rank <= europeCount ? 'border-l-2 border-broadcast-blue' : rank > total - relegationCount ? 'border-l-2 border-broadcast-red' : 'border-l-2 border-transparent';
+            const zone = rank <= europeCount ? 'border-l-2 border-signal-blue' : rank > total - relegationCount ? 'border-l-2 border-signal-red' : 'border-l-2 border-transparent';
             return (
               <tr
                 key={row.clubId}
-                className={`border-b border-pitch-800 ${zone} ${isHighlight ? 'bg-broadcast-yellow/10 text-broadcast-yellow' : ''}`}
+                className={`border-b border-white/[0.05] ${zone} ${isHighlight ? 'bg-accent/10 text-accent' : ''}`}
               >
                 <td className="py-1 pr-2 pl-2 tabular-nums">{rank}</td>
                 <td className="py-1 pr-2 font-display uppercase tracking-wide">{clubs[row.clubId]?.shortName ?? row.clubId}</td>

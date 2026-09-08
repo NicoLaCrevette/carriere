@@ -50,8 +50,17 @@ export const SEASON_BALANCE = {
       fitnessWeight: 0.15,
       /** Compatibilité minimale d'un poste secondaire déclaré. */
       secondaryPositionCompat: 0.92,
-      /** Joueur incarné : facteur = base + coachTrust / divisor (0.7 à 0 de confiance, 1.0 à 100). */
-      playerTrust: { base: 0.7, divisor: 333 },
+      /**
+       * Joueur incarné : la défiance du coach coûte des POINTS de note, pas un
+       * pourcentage. Un malus multiplicatif grandit avec le niveau (à 0.83, un
+       * joueur à 55 perd 9 points, un joueur à 73 en perd 12) : progresser ne
+       * rapproche jamais du onze, et la hiérarchie se verrouille — la confiance
+       * dépend du rang, qui dépend de la confiance. En points, le malus est
+       * constant : le joueur qui devient meilleur que ses concurrents finit par
+       * passer devant, sans que le début de carrière soit plus tendre.
+       * 0 de confiance → −maxPenalty points ; 100 → aucun malus.
+       */
+      playerTrust: { maxPenalty: 12 },
       benchSize: 9,
       /** Congestion : N matchs en D jours → repos partiel des titulaires fatigués avec cette probabilité. */
       congestion: { matches: 3, days: 8, restProb: 0.5 },
@@ -131,6 +140,8 @@ export const SEASON_BALANCE = {
     maxDays: 7,
     /** Bilan de semaine : lignes de journal conservées au maximum (les plus anciennes d'abord). */
     maxMessages: 12,
+    /** Bilan de semaine : attributs détaillés au maximum dans « ce que l'entraînement a rapporté ». */
+    maxProgression: 6,
   },
 
   endOfSeason: {
