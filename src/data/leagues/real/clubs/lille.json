@@ -1,0 +1,269 @@
+{
+  "id": "lille",
+  "name": "LOSC Lille",
+  "shortName": "Lille",
+  "code": "LOSC",
+  "city": "Villeneuve-d'Ascq",
+  "country": "FRA",
+  "colors": { "primary": "#E30613", "secondary": "#0E2240" },
+  "stadium": { "name": "Stade Pierre-Mauroy", "capacity": 50186 },
+  "leagueId": "ligue1",
+  "prestige": 77,
+  "fanbase": 68,
+  "facilities": 78,
+  "transferBudget": 30000000,
+  "wageBudgetMonthly": 4500000,
+  "boardObjective": "podium",
+  "rivalClubIds": ["lens"],
+  "note": "Effectif au 2026-09-06 (mercato clos le 1er septembre). 3e de Ligue 1 2025-26, Ligue des champions. Davide Ancelotti a remplacé Bruno Genesio (parti à Marseille). Départs majeurs : Bouaddi (Manchester City, ~95 M€), Fernandez-Pardo (Newcastle, ~60 M€), Meunier, Mandi, Mbemba, Bayo. Bodart et Morais encore sous contrat mais poussés vers la sortie.",
+  "coach": {
+    "firstName": "Davide",
+    "lastName": "Ancelotti",
+    "nationality": "ITA",
+    "birthDate": "1989-07-22",
+    "contractEndsOn": "2028-06-30",
+    "ability": 72,
+    "youthTrust": 60,
+    "patience": 60,
+    "formation": "4-2-3-1",
+    "mentality": "offensive",
+    "style": "pressing_haut",
+    "pressing": 0.65,
+    "tempo": 0.65,
+    "width": 0.55,
+    "personality": {
+      "warmth": 68,
+      "severity": 45,
+      "volatility": 30,
+      "mediaHunger": 35,
+      "loyalty": 60,
+      "keywords": ["fils de Carlo Ancelotti", "ancien adjoint au Real et au Bayern", "pédagogue", "gestion des egos", "jeu vertical et courageux", "récupération rapide après perte", "premier grand poste en Europe"]
+    },
+    "note": "Nommé le 1er juin 2026 pour deux saisons après un passage à Botafogo (6e du Brasileirão 2025)."
+  },
+  "players": [
+    {
+      "firstName": "Berke", "lastName": "Özer", "birthDate": "2000-05-25", "nationality": "TUR",
+      "position": "GB", "secondaryPositions": [], "foot": "droit", "heightCm": 190, "weightKg": 84,
+      "shirtNumber": 1, "overall": 79, "potential": 82, "fame": 55, "contractEndsOn": "2029-06-30",
+      "wageMonthly": 120000, "marketValue": 18000000, "archetypes": ["gardien_ligne"],
+      "attributes": { "reflexes": 83, "plongeon": 81, "unContreUn": 80, "jeuAuPied": 70, "sortiesAeriennes": 74 },
+      "captain": false
+    },
+    {
+      "firstName": "Orlando", "lastName": "Gill", "birthDate": "2000-06-11", "nationality": "PRY",
+      "position": "GB", "secondaryPositions": [], "foot": "droit", "heightCm": 199, "weightKg": 92,
+      "shirtNumber": 12, "overall": 72, "potential": 76, "fame": 30, "contractEndsOn": "2031-06-30",
+      "wageMonthly": 60000, "marketValue": 4000000, "archetypes": ["gardien_ligne"],
+      "attributes": { "reflexes": 75, "plongeon": 74, "sortiesAeriennes": 78, "jeuAuPied": 62, "unContreUn": 73 },
+      "captain": false,
+      "note": "Arrivé de San Lorenzo le 25 août 2026 (~3,6 M€), international paraguayen."
+    },
+    {
+      "firstName": "Arnaud", "lastName": "Bodart", "birthDate": "1998-03-11", "nationality": "BEL",
+      "position": "GB", "secondaryPositions": [], "foot": "droit", "heightCm": 184, "weightKg": 78,
+      "shirtNumber": 16, "overall": 71, "potential": 72, "fame": 30, "contractEndsOn": "2029-06-30",
+      "wageMonthly": 70000, "marketValue": 4000000, "archetypes": ["gardien_ligne"],
+      "attributes": { "reflexes": 75, "plongeon": 73, "unContreUn": 71, "jeuAuPied": 64, "sortiesAeriennes": 68 },
+      "captain": false,
+      "note": "Poussé vers la sortie début septembre 2026 (marchés belge/turc encore ouverts), toujours sous contrat au 6 septembre."
+    },
+    {
+      "firstName": "Loun", "lastName": "Srdanovic", "birthDate": "2006-08-04", "nationality": "SUI",
+      "position": "DD", "secondaryPositions": ["DC"], "foot": "droit", "heightCm": 182, "weightKg": 74,
+      "shirtNumber": 2, "overall": 64, "potential": 79, "fame": 15, "contractEndsOn": "2030-06-30",
+      "wageMonthly": 25000, "marketValue": 4000000, "archetypes": ["piston"],
+      "attributes": { "vitesse": 78, "acceleration": 78, "endurance": 74, "centres": 62, "travailDefensif": 65 },
+      "captain": false,
+      "note": "Recruté à Servette (3 M€) en juillet 2026. Taille et poids estimés."
+    },
+    {
+      "firstName": "Nathan", "lastName": "Ngoy", "birthDate": "2003-05-15", "nationality": "BEL", "secondNationality": "COD",
+      "position": "DC", "secondaryPositions": ["DD"], "foot": "droit", "heightCm": 187, "weightKg": 80,
+      "shirtNumber": 3, "overall": 77, "potential": 83, "fame": 42, "contractEndsOn": "2029-06-30",
+      "wageMonthly": 100000, "marketValue": 25000000, "archetypes": ["mur", "relanceur"],
+      "attributes": { "placement": 78, "force": 80, "tete": 77, "vitesse": 74, "passeCourte": 74 },
+      "captain": false
+    },
+    {
+      "firstName": "Alexsandro", "lastName": "Ribeiro", "nickname": "Alexsandro", "birthDate": "1999-08-09", "nationality": "BRA",
+      "position": "DC", "secondaryPositions": [], "foot": "gauche", "heightCm": 189, "weightKg": 84,
+      "shirtNumber": 4, "overall": 79, "potential": 80, "fame": 50, "contractEndsOn": "2028-06-30",
+      "wageMonthly": 150000, "marketValue": 22000000, "archetypes": ["mur", "relanceur"],
+      "attributes": { "placement": 80, "tete": 80, "force": 82, "passeLongue": 74, "sangFroid": 76 },
+      "captain": false
+    },
+    {
+      "firstName": "Romain", "lastName": "Perraud", "birthDate": "1997-09-22", "nationality": "FRA",
+      "position": "DG", "secondaryPositions": ["AIG"], "foot": "gauche", "heightCm": 174, "weightKg": 72,
+      "shirtNumber": 15, "overall": 75, "potential": 75, "fame": 40, "contractEndsOn": "2028-06-30",
+      "wageMonthly": 120000, "marketValue": 9000000, "archetypes": ["piston"],
+      "attributes": { "centres": 78, "vitesse": 77, "endurance": 80, "coupsFrancs": 72, "travailDefensif": 72 },
+      "captain": false
+    },
+    {
+      "firstName": "Tiago", "lastName": "Santos", "birthDate": "2002-07-23", "nationality": "POR",
+      "position": "DD", "secondaryPositions": ["AID"], "foot": "droit", "heightCm": 175, "weightKg": 68,
+      "shirtNumber": 22, "overall": 74, "potential": 78, "fame": 38, "contractEndsOn": "2028-06-30",
+      "wageMonthly": 90000, "marketValue": 12000000, "archetypes": ["piston"],
+      "attributes": { "vitesse": 84, "acceleration": 85, "centres": 74, "dribble": 74, "travailDefensif": 68 },
+      "captain": false
+    },
+    {
+      "firstName": "Tanguy", "lastName": "Nianzou", "birthDate": "2002-06-07", "nationality": "FRA", "secondNationality": "CIV",
+      "position": "DC", "secondaryPositions": ["MDC"], "foot": "droit", "heightCm": 191, "weightKg": 85,
+      "shirtNumber": 23, "overall": 73, "potential": 77, "fame": 40, "contractEndsOn": "2029-06-30",
+      "wageMonthly": 120000, "marketValue": 8000000, "archetypes": ["mur"],
+      "attributes": { "force": 84, "tete": 78, "placement": 72, "passeCourte": 72, "vitesse": 70 },
+      "captain": false,
+      "note": "Arrivé libre du Séville FC à l'été 2026 ; durée de contrat à vérifier. Hors groupe (choix) début septembre."
+    },
+    {
+      "firstName": "Calvin", "lastName": "Verdonk", "birthDate": "1997-04-26", "nationality": "IDN", "secondNationality": "NLD",
+      "position": "DG", "secondaryPositions": ["DC"], "foot": "gauche", "heightCm": 181, "weightKg": 76,
+      "shirtNumber": 24, "overall": 71, "potential": 71, "fame": 32, "contractEndsOn": "2027-06-30",
+      "wageMonthly": 60000, "marketValue": 4000000, "archetypes": ["piston"],
+      "attributes": { "travailDefensif": 74, "endurance": 76, "centres": 68, "placement": 72, "vitesse": 70 },
+      "captain": false
+    },
+    {
+      "firstName": "Isaac", "lastName": "Cossier", "birthDate": "2006-11-30", "nationality": "FRA",
+      "position": "DC", "secondaryPositions": [], "foot": "droit", "heightCm": 186, "weightKg": 78,
+      "shirtNumber": 26, "overall": 62, "potential": 78, "fame": 12, "contractEndsOn": "2030-06-30",
+      "wageMonthly": 15000, "marketValue": 3000000, "archetypes": ["mur"],
+      "attributes": { "force": 72, "tete": 70, "placement": 62, "vitesse": 68, "passeCourte": 62 },
+      "captain": false,
+      "note": "Formé au club, prolongé jusqu'en 2030 en juillet 2026. Taille et poids estimés."
+    },
+    {
+      "firstName": "Nabil", "lastName": "Bentaleb", "birthDate": "1994-11-24", "nationality": "ALG", "secondNationality": "FRA",
+      "position": "MDC", "secondaryPositions": ["MC"], "foot": "gauche", "heightCm": 187, "weightKg": 83,
+      "shirtNumber": 6, "overall": 76, "potential": 76, "fame": 50, "contractEndsOn": "2027-06-30",
+      "wageMonthly": 200000, "marketValue": 8000000, "archetypes": ["regisseur", "sentinelle"],
+      "attributes": { "passeLongue": 82, "passeCourte": 82, "tirLointain": 76, "vision": 78, "force": 78 },
+      "captain": false,
+      "note": "Discussions de prolongation en cours à l'été 2026."
+    },
+    {
+      "firstName": "Ethan", "lastName": "Mbappé", "birthDate": "2006-12-29", "nationality": "FRA", "secondNationality": "CMR",
+      "position": "MC", "secondaryPositions": ["MOC", "AID"], "foot": "gauche", "heightCm": 183, "weightKg": 72,
+      "shirtNumber": 8, "overall": 77, "potential": 87, "fame": 55, "contractEndsOn": "2029-06-30",
+      "wageMonthly": 150000, "marketValue": 30000000, "archetypes": ["box_to_box", "createur"],
+      "attributes": { "passeCourte": 78, "dribble": 78, "vision": 78, "tirLointain": 74, "endurance": 78 },
+      "captain": false,
+      "note": "Prolongation bouclée à l'été 2026 (échéance exacte à vérifier). Aligné côté droit dans le 4-2-3-1 d'Ancelotti."
+    },
+    {
+      "firstName": "Hákon Arnar", "lastName": "Haraldsson", "birthDate": "2003-04-10", "nationality": "ISL",
+      "position": "MOC", "secondaryPositions": ["MC", "AID"], "foot": "droit", "heightCm": 180, "weightKg": 74,
+      "shirtNumber": 10, "overall": 79, "potential": 84, "fame": 55, "contractEndsOn": "2028-06-30",
+      "wageMonthly": 150000, "marketValue": 30000000, "archetypes": ["createur", "box_to_box"],
+      "attributes": { "vision": 82, "passeCourte": 82, "dribble": 80, "finition": 76, "endurance": 80 },
+      "captain": false
+    },
+    {
+      "firstName": "Maurits", "lastName": "Kjærgaard", "birthDate": "2003-06-26", "nationality": "DNK",
+      "position": "MC", "secondaryPositions": ["MOC", "MDC"], "foot": "gauche", "heightCm": 190, "weightKg": 80,
+      "shirtNumber": 14, "overall": 74, "potential": 80, "fame": 30, "contractEndsOn": "2031-06-30",
+      "wageMonthly": 100000, "marketValue": 10000000, "archetypes": ["regisseur", "box_to_box"],
+      "attributes": { "passeCourte": 78, "vision": 76, "controle": 77, "endurance": 78, "force": 74 },
+      "captain": false,
+      "note": "Arrivé du RB Salzbourg (5 à 8 M€ selon les sources), contrat de cinq ans."
+    },
+    {
+      "firstName": "Ngal'ayel", "lastName": "Mukau", "birthDate": "2004-11-08", "nationality": "COD", "secondNationality": "BEL",
+      "position": "MC", "secondaryPositions": ["MDC"], "foot": "droit", "heightCm": 181, "weightKg": 76,
+      "shirtNumber": 17, "overall": 74, "potential": 81, "fame": 35, "contractEndsOn": "2029-06-30",
+      "wageMonthly": 80000, "marketValue": 15000000, "archetypes": ["box_to_box", "destructeur"],
+      "attributes": { "endurance": 84, "travailDefensif": 76, "tirLointain": 74, "force": 76, "passeCourte": 72 },
+      "captain": false
+    },
+    {
+      "firstName": "Benjamin", "lastName": "André", "birthDate": "1990-08-03", "nationality": "FRA",
+      "position": "MDC", "secondaryPositions": ["MC", "DC"], "foot": "droit", "heightCm": 181, "weightKg": 73,
+      "shirtNumber": 21, "overall": 77, "potential": 77, "fame": 50, "contractEndsOn": "2027-06-30",
+      "wageMonthly": 250000, "marketValue": 4000000, "archetypes": ["sentinelle", "destructeur"],
+      "attributes": { "placement": 84, "travailDefensif": 84, "leadership": 88, "passeCourte": 78, "endurance": 78 },
+      "captain": true
+    },
+    {
+      "firstName": "Gaëtan", "lastName": "Perrin", "birthDate": "1996-06-07", "nationality": "FRA",
+      "position": "MOC", "secondaryPositions": ["AID", "AIG"], "foot": "gauche", "heightCm": 172, "weightKg": 65,
+      "shirtNumber": 28, "overall": 72, "potential": 72, "fame": 35, "contractEndsOn": "2028-06-30",
+      "wageMonthly": 80000, "marketValue": 6000000, "archetypes": ["createur", "dribbleur"],
+      "attributes": { "dribble": 80, "passeCourte": 78, "vision": 77, "coupsFrancs": 76, "agilite": 82 },
+      "captain": false
+    },
+    {
+      "firstName": "Soriba", "lastName": "Diaoune", "birthDate": "2007-08-14", "nationality": "FRA", "secondNationality": "GIN",
+      "position": "AIG", "secondaryPositions": ["AID", "MOC"], "foot": "droit", "heightCm": 178, "weightKg": 70,
+      "shirtNumber": 35, "overall": 58, "potential": 77, "fame": 10, "contractEndsOn": "2029-06-30",
+      "wageMonthly": 10000, "marketValue": 2000000, "archetypes": ["dribbleur"],
+      "attributes": { "vitesse": 80, "acceleration": 82, "dribble": 70, "agilite": 76, "finition": 56 },
+      "captain": false,
+      "note": "Jeune du centre de formation ; taille, poids, pied et échéance de contrat estimés."
+    },
+    {
+      "firstName": "Dilane", "lastName": "Bakwa", "birthDate": "2002-08-28", "nationality": "FRA", "secondNationality": "COD",
+      "position": "AID", "secondaryPositions": ["AIG", "MOC"], "foot": "gauche", "heightCm": 178, "weightKg": 73,
+      "shirtNumber": 7, "overall": 75, "potential": 79, "fame": 45, "contractEndsOn": "2027-06-30",
+      "wageMonthly": 120000, "marketValue": 18000000, "archetypes": ["dribbleur", "createur"],
+      "attributes": { "dribble": 84, "vitesse": 82, "acceleration": 84, "centres": 76, "passeCourte": 76 },
+      "captain": false,
+      "note": "Prêt d'une saison en provenance de Nottingham Forest (option d'achat à vérifier)."
+    },
+    {
+      "firstName": "Olivier", "lastName": "Giroud", "birthDate": "1986-09-30", "nationality": "FRA",
+      "position": "BU", "secondaryPositions": [], "foot": "gauche", "heightCm": 193, "weightKg": 92,
+      "shirtNumber": 9, "overall": 76, "potential": 76, "fame": 90, "contractEndsOn": "2027-06-30",
+      "wageMonthly": 200000, "marketValue": 2000000, "archetypes": ["pivot", "finisseur"],
+      "attributes": { "tete": 88, "finition": 82, "force": 82, "sangFroid": 84, "vitesse": 52, "leadership": 82 },
+      "captain": false,
+      "note": "Prolongé d'une saison à l'été 2026."
+    },
+    {
+      "firstName": "Osame", "lastName": "Sahraoui", "birthDate": "2001-06-11", "nationality": "MAR", "secondNationality": "NOR",
+      "position": "AIG", "secondaryPositions": ["MOC", "AID"], "foot": "droit", "heightCm": 174, "weightKg": 68,
+      "shirtNumber": 11, "overall": 74, "potential": 78, "fame": 42, "contractEndsOn": "2028-06-30",
+      "wageMonthly": 90000, "marketValue": 15000000, "archetypes": ["dribbleur", "createur"],
+      "attributes": { "dribble": 84, "agilite": 84, "controle": 80, "passeCourte": 76, "vitesse": 76 },
+      "captain": false
+    },
+    {
+      "firstName": "Ayase", "lastName": "Ueda", "birthDate": "1998-08-28", "nationality": "JPN",
+      "position": "BU", "secondaryPositions": [], "foot": "droit", "heightCm": 182, "weightKg": 80,
+      "shirtNumber": 18, "overall": 75, "potential": 76, "fame": 50, "contractEndsOn": "2030-06-30",
+      "wageMonthly": 180000, "marketValue": 15000000, "archetypes": ["finisseur", "pivot"],
+      "attributes": { "finition": 80, "tete": 78, "placement": 78, "force": 76, "vitesse": 72 },
+      "captain": false,
+      "note": "Recrue la plus chère de l'été 2026 (15 M€, Feyenoord)."
+    },
+    {
+      "firstName": "Başar", "lastName": "Önal", "birthDate": "2004-07-06", "nationality": "TUR",
+      "position": "AIG", "secondaryPositions": ["AID", "MOC"], "foot": "droit", "heightCm": 173, "weightKg": 68,
+      "shirtNumber": 19, "overall": 74, "potential": 81, "fame": 35, "contractEndsOn": "2030-06-30",
+      "wageMonthly": 100000, "marketValue": 14000000, "archetypes": ["ailier_de_debordement", "dribbleur"],
+      "attributes": { "vitesse": 86, "acceleration": 87, "dribble": 80, "centres": 72, "finition": 70 },
+      "captain": false,
+      "note": "Arrivé du NEC Nimègue pour 12,5 M€ bonus compris."
+    },
+    {
+      "firstName": "Hamza", "lastName": "Igamane", "birthDate": "2002-12-01", "nationality": "MAR",
+      "position": "BU", "secondaryPositions": ["AIG"], "foot": "droit", "heightCm": 178, "weightKg": 75,
+      "shirtNumber": 29, "overall": 73, "potential": 79, "fame": 38, "contractEndsOn": "2030-06-30",
+      "wageMonthly": 90000, "marketValue": 12000000, "archetypes": ["finisseur", "profondeur"],
+      "attributes": { "finition": 76, "vitesse": 80, "acceleration": 82, "dribble": 74, "sangFroid": 72 },
+      "captain": false,
+      "note": "Blessé au genou (rééducation depuis l'été 2026), indisponible début septembre."
+    },
+    {
+      "firstName": "Tiago", "lastName": "Morais", "birthDate": "2004-01-23", "nationality": "POR",
+      "position": "AIG", "secondaryPositions": ["AID"], "foot": "droit", "heightCm": 170, "weightKg": 65,
+      "shirtNumber": 31, "overall": 65, "potential": 74, "fame": 18, "contractEndsOn": "2028-06-30",
+      "wageMonthly": 30000, "marketValue": 3000000, "archetypes": ["dribbleur"],
+      "attributes": { "dribble": 76, "agilite": 80, "vitesse": 78, "acceleration": 80, "finition": 62 },
+      "captain": false,
+      "note": "Sans numéro officiel pour 2026-27 (31 attribué ici), en recherche d'un prêt au 6 septembre 2026. Date de naissance à vérifier."
+    }
+  ]
+}

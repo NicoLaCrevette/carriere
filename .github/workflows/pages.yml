@@ -1,0 +1,53 @@
+name: Publier le jeu sur GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Une seule publication à la fois ; on laisse finir celle en cours.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  construire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Le typage et les tests rapides gardent la version en ligne honnête.
+      - run: npx tsc -p tsconfig.json --noEmit
+      - name: Tests (échantillons réduits pour tenir dans le CI)
+        run: npx vitest run src
+        env:
+          CARRIERE_SEASONS: 12
+          CARRIERE_LONGRUN: 2
+      - name: Construire
+        run: npm run build
+        env:
+          # Le dépôt est servi depuis /<nom-du-depot>/ sur github.io.
+          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  publier:
+    needs: construire
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - id: deploiement
+        uses: actions/deploy-pages@v4

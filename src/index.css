@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-pitch-950 text-white font-body antialiased;
+}
+
+@layer components {
+  .input {
+    @apply bg-pitch-800 border border-pitch-600 px-3 py-2 text-sm text-white focus:border-broadcast-yellow focus:outline-none;
+  }
+  .btn-step {
+    @apply h-6 w-6 border border-pitch-600 text-white text-sm leading-none hover:border-broadcast-yellow disabled:opacity-30 disabled:cursor-not-allowed;
+  }
+}
