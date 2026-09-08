@@ -268,7 +268,10 @@ function finishDay(state: CareerState, started: StartedDay, hooks: DayHooks | un
       }
       for (const o of rollTransferOffers(state)) {
         const club = state.world.clubs[o.clubId];
-        const amount = o.loan ? 'prêt' : `${Math.round(o.fee / 1_000_000)} M€`;
+        // Une indemnité de 300 k€ ne doit pas s'afficher « 0 M€ » : l'unité suit le montant.
+        const amount = o.loan ? 'prêt'
+          : o.fee >= 1_000_000 ? `${(o.fee / 1_000_000).toFixed(1).replace('.', ',')} M€`
+            : `${Math.round(o.fee / 1000)} k€`;
         result.messages.push(`Offre de ${club?.name ?? o.clubId} : ${amount}, ${Math.round(o.wageMonthly / 1000)} k€/mois sur ${o.years} an(s).`);
       }
     }

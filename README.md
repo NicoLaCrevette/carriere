@@ -1,5 +1,12 @@
 # CARRIÈRE
 
+**Jouer en ligne : <https://nicolacrevette.github.io/carriere/>** — rien à
+installer, ça marche depuis n'importe quel navigateur. La version en ligne
+utilise les textes pré-écrits ; pour des dialogues générés gratuitement, joue
+en local avec Ollama (voir plus bas) ou déploie la fonction de `edge/`.
+Les sauvegardes vivent dans le navigateur : passe de l'un à l'autre avec
+l'export et l'import JSON de l'écran Réglages.
+
 Simulateur de carrière de footballeur, solo, jouable au clavier **et à la
 voix**. Tu incarnes un seul joueur de ses 16-21 ans jusqu'à sa retraite. Les
 matchs se jouent minute par minute sur les actions importantes, les réponses
