@@ -61,14 +61,19 @@ describe('graine de carrière', () => {
   });
 
   it('une graine s’écrit et se relit', () => {
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 500; i++) {
       const s = randomSeed();
-      expect(parseSeed(formatSeed(s))).toBe(s);
+      expect(parseSeed(formatSeed(s)), formatSeed(s)).toBe(s);
     }
     expect(parseSeed('')).toBeUndefined();
     expect(parseSeed('pas une graine !')).toBeUndefined();
-    // Une graine peut aussi se saisir en clair.
-    expect(parseSeed('1234')).toBe(1234);
+  });
+
+  it('relit toujours en base 36, y compris une graine qui s’écrit sans lettre', () => {
+    // 364804890 s'écrit « 0617196 » : lu en décimal il vaudrait 617196, sans erreur visible.
+    expect(formatSeed(364804890)).toBe('0617196');
+    expect(parseSeed('0617196')).toBe(364804890);
+    expect(parseSeed('1234')).toBe(parseInt('1234', 36));
   });
 });
 

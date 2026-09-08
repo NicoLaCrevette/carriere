@@ -1,4 +1,5 @@
 import type { Id, MatchEvent } from '../../engine/types';
+import { acteursDe } from '../lib/eventText';
 import { eventLabel } from '../lib/labels';
 
 interface SummaryLine {
@@ -33,8 +34,7 @@ export default function MatchTimeline({ events, summaryLines, nameOf }: MatchTim
           <span className="w-10 shrink-0 tabular-nums text-muted">{e.minute}'</span>
           <span className="flex-1">
             <span className="font-semibold">{eventLabel(e.type)}</span>
-            {e.playerId && <span> — {nameOf(e.playerId)}</span>}
-            {e.secondaryPlayerId && <span className="text-muted"> ({nameOf(e.secondaryPlayerId)})</span>}
+            {acteursDe(e, nameOf) && <span> — {acteursDe(e, nameOf)}</span>}
           </span>
         </div>
       ),

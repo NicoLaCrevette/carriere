@@ -93,11 +93,16 @@ export function formatSeed(seed: Seed): string {
   return seed.toString(36).toUpperCase().padStart(7, '0');
 }
 
-/** Lit une graine saisie à la main (format `formatSeed`, ou un nombre). Renvoie undefined si illisible. */
+/**
+ * Lit une graine saisie à la main, dans le format de `formatSeed` (base 36).
+ *
+ * Toujours en base 36, jamais en décimal : une graine comme 364804890 s'écrit
+ * « 0617196 », qui ne contient que des chiffres. Accepter aussi le décimal
+ * rendrait cette écriture ambiguë et relirait 617196 sans rien signaler.
+ * Renvoie undefined si la saisie est illisible.
+ */
 export function parseSeed(input: string): Seed | undefined {
   const s = input.trim().toUpperCase();
-  if (!s) return undefined;
-  if (/^\d+$/.test(s) && Number(s) <= 0xffff_ffff) return Number(s) >>> 0;
   if (!/^[0-9A-Z]{1,7}$/.test(s)) return undefined;
   const n = parseInt(s, 36);
   return Number.isFinite(n) && n >= 0 && n <= 0xffff_ffff ? (n >>> 0) : undefined;

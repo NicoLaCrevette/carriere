@@ -14,6 +14,7 @@ import { useVoice, speech } from '../../voice/useVoice';
 import { COMMENTATOR_VOICE, CROWD_VOICE, effectiveVoice, SYSTEM_VOICE, voiceFor } from '../../voice/voiceRegistry';
 import type { NarrationLine } from '../../llm/schemas';
 import { eventLabel, formatSigned } from '../lib/labels';
+import { acteursDe } from '../lib/eventText';
 import { playCue } from '../lib/sounds';
 import Button from '../components/Button';
 import Panel from '../components/Panel';
@@ -55,7 +56,7 @@ function voiceForSpeaker(career: CareerState, speaker: NarrationLine['speaker'])
 }
 
 function EventRow({ e, career }: { e: MatchEvent; career: CareerState }) {
-  const who = [nameOf(career, e.playerId), nameOf(career, e.secondaryPlayerId)].filter(Boolean).join(' → ');
+  const who = acteursDe(e, (id) => nameOf(career, id));
   return (
     <li className={`flex gap-2 text-xs py-0.5 ${e.involvesPlayer ? 'text-accent' : 'text-muted'}`}>
       <span className="w-8 shrink-0 tabular-nums">{e.minute}'</span>
