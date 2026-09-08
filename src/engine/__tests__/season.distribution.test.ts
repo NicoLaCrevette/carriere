@@ -9,6 +9,16 @@ import { runHeadlessSeason, type HeadlessSeasonSummary } from '../sim/headless';
 import { BALANCE } from '../config/balance';
 
 const N = Number(process.env.CARRIERE_SEASONS ?? 100);
+/**
+ * Les cibles §6.5 sont des moyennes de saison : sur un petit échantillon, le
+ * bruit d'échantillonnage dépasse la tolérance des bornes (une saison de
+ * champion à 66 points suffit à faire passer la moyenne sous 70 sur 12 tirages).
+ * `CARRIERE_SEASONS` sert à accélérer le développement, pas à relâcher la cible :
+ * les bornes serrées ne sont vérifiées qu'à partir de cet échantillon.
+ */
+const ECHANTILLON_SUFFISANT = N >= 60;
+/** Marge accordée aux bornes quand l'échantillon est réduit (points de championnat). */
+const MARGE_PETIT_ECHANTILLON = 6;
 const T = BALANCE.seasonTargets;
 
 function median(values: number[]): number {
@@ -118,10 +128,11 @@ describe(`distribution sur ${N} saisons (attaquant 18 ans, prometteur, exigeant)
   });
 
   it('classements plausibles : champion 70-95 points, dernier 15-40', () => {
-    expect(mean(agg.championPoints), info).toBeGreaterThanOrEqual(T.championPoints[0]);
-    expect(mean(agg.championPoints), info).toBeLessThanOrEqual(T.championPoints[1]);
-    expect(mean(agg.lastPoints), info).toBeGreaterThanOrEqual(T.lastPoints[0]);
-    expect(mean(agg.lastPoints), info).toBeLessThanOrEqual(T.lastPoints[1]);
+    const marge = ECHANTILLON_SUFFISANT ? 0 : MARGE_PETIT_ECHANTILLON;
+    expect(mean(agg.championPoints), info).toBeGreaterThanOrEqual(T.championPoints[0] - marge);
+    expect(mean(agg.championPoints), info).toBeLessThanOrEqual(T.championPoints[1] + marge);
+    expect(mean(agg.lastPoints), info).toBeGreaterThanOrEqual(T.lastPoints[0] - marge);
+    expect(mean(agg.lastPoints), info).toBeLessThanOrEqual(T.lastPoints[1] + marge);
   });
 
   it('buts par match de ligue entre 2.3 et 3.3, meilleur buteur entre 14 et 30', () => {

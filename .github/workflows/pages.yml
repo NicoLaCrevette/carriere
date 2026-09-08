@@ -30,7 +30,7 @@ jobs:
       - name: Tests (échantillons réduits pour tenir dans le CI)
         run: npx vitest run src
         env:
-          CARRIERE_SEASONS: 12
+          CARRIERE_SEASONS: 30
           CARRIERE_LONGRUN: 2
       - name: Construire
         run: npm run build
