@@ -663,6 +663,25 @@ app.post('/api/transcribe', express.raw({ type: 'audio/*', limit: '25mb' }), asy
   }
 });
 
+/**
+ * Le proxy ne doit jamais mourir pendant qu'on joue.
+ *
+ * Une bibliothèque tierce peut lever depuis un gestionnaire d'événement — un
+ * WebSocket, un flux — c'est-à-dire hors de toute pile `await` : aucun
+ * `try/catch` de ce fichier ne l'attrape, et Node tue le processus. C'est
+ * arrivé avec la synthèse vocale, emportant du même coup les dialogues. Une
+ * voix qui échoue doit dégrader vers les voix du navigateur, pas couper la
+ * partie. On journalise et on continue.
+ */
+process.on('uncaughtException', (e) => {
+  // eslint-disable-next-line no-console
+  console.error(`[proxy] exception non rattrapée, on continue : ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
+});
+process.on('unhandledRejection', (e) => {
+  // eslint-disable-next-line no-console
+  console.error(`[proxy] promesse rejetée, on continue : ${e instanceof Error ? e.message : String(e)}`);
+});
+
 app.listen(PORT, () => {
   void (async () => {
     const provider = await currentProvider();

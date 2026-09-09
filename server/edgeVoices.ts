@@ -85,29 +85,6 @@ function prosody(rate: number, pitch: number): { rate: string; pitch: string } {
   return { rate: pct(borne(rate, 0.85, 1.15)), pitch: pct(borne(pitch, 0.92, 1.08)) };
 }
 
-/**
- * Une connexion par voix, gardée ouverte.
- *
- * Sans mutualisation, chaque réplique rouvrait un WebSocket : ~130 ms perdues
- * à chaque fois, ce qui se sent en match où la situation attend la fin de la
- * lecture. Une connexion morte est remplacée à la demande.
- */
-const connexions = new Map<string, Promise<MsEdgeTTS>>();
-
-function connexion(voice: string): Promise<MsEdgeTTS> {
-  const existante = connexions.get(voice);
-  if (existante) return existante;
-  const ouverte = (async () => {
-    const tts = new MsEdgeTTS();
-    await tts.setMetadata(voice, FORMAT);
-    return tts;
-  })();
-  // Une ouverture ratée ne doit pas condamner la voix pour toute la session.
-  ouverte.catch(() => connexions.delete(voice));
-  connexions.set(voice, ouverte);
-  return ouverte;
-}
-
 export interface SynthesizeInput {
   text: string;
   voice: string;
@@ -115,16 +92,26 @@ export interface SynthesizeInput {
   pitch?: number;
 }
 
-/** Une passe de synthèse sur la connexion mutualisée. Renvoie un buffer vide si elle a lâché. */
-async function parLaConnexion(voice: string, text: string, p: { rate: string; pitch: string }): Promise<Buffer> {
+/**
+ * Une passe de synthèse, sur une connexion neuve.
+ *
+ * PAS de connexion mutualisée, et c'est délibéré. `msedge-tts` indexe ses flux
+ * par identifiant de requête : sur une connexion partagée, une trame audio
+ * tardive appartenant à une requête déjà terminée trouve son flux absent et
+ * lève dans le gestionnaire `onmessage` du WebSocket — hors de toute pile
+ * `await`, donc impossible à rattraper ici, et le processus entier meurt.
+ * C'est arrivé, en pleine partie. Le gain mesuré était par ailleurs nul :
+ * 625 ms sans mutualisation, 1,1 à 1,5 s avec.
+ */
+async function uneSynthese(voice: string, text: string, p: { rate: string; pitch: string }): Promise<Buffer> {
   try {
-    const tts = await connexion(voice);
+    const tts = new MsEdgeTTS();
+    await tts.setMetadata(voice, FORMAT);
     const { audioStream } = await tts.toStream(text, { rate: p.rate, pitch: p.pitch });
     const chunks: Buffer[] = [];
     for await (const chunk of audioStream) chunks.push(Buffer.from(chunk));
     return Buffer.concat(chunks);
   } catch {
-    connexions.delete(voice);
     return Buffer.alloc(0);
   }
 }
@@ -141,12 +128,9 @@ export async function synthesize({ text, voice, rate = 1, pitch = 1 }: Synthesiz
     return hit;
   }
 
-  let audio = await parLaConnexion(voice, text, p);
-  if (audio.length === 0) {
-    // Connexion périmée : on la jette et on retente une fois.
-    connexions.delete(voice);
-    audio = await parLaConnexion(voice, text, p);
-  }
+  let audio = await uneSynthese(voice, text, p);
+  // Le service coupe parfois une connexion : une seconde tentative suffit.
+  if (audio.length === 0) audio = await uneSynthese(voice, text, p);
   if (audio.length === 0) throw new Error('Synthèse vide');
   remember(key, audio);
   return audio;
