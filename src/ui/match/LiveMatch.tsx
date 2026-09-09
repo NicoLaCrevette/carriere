@@ -5,7 +5,7 @@
  * jeu ici : tout vient du store de match et du moteur.
  */
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import type { CareerState, MatchEvent, VoiceProfile } from '../../engine/types';
+import type { CareerState, MatchEvent, NpcKind, VoiceProfile } from '../../engine/types';
 import { BALANCE } from '../../engine/config/balance';
 import { useCareerStore } from '../../store/careerStore';
 import { useMatchStore } from '../../store/matchStore';
@@ -40,19 +40,19 @@ function nameOf(career: CareerState, id: string | undefined): string {
 }
 
 /** Voix d'un intervenant de la narration : PNJ réels du club quand ils existent. */
-function voiceForSpeaker(career: CareerState, speaker: NarrationLine['speaker']): { npcId: string; voice: VoiceProfile } {
+function voiceForSpeaker(career: CareerState, speaker: NarrationLine['speaker']): { npcId: string; voice: VoiceProfile; kind?: NpcKind } {
   const club = career.world.clubs[career.player.contract.clubId];
-  if (speaker === 'coach' && club) return { npcId: club.coachId, voice: voiceFor(career, club.coachId) };
+  if (speaker === 'coach' && club) return { npcId: club.coachId, voice: voiceFor(career, club.coachId), kind: 'coach' };
   if (speaker === 'capitaine') {
     const cap = Object.values(career.world.npcs).find((n) => n.kind === 'capitaine' && n.clubId === club?.id);
-    if (cap) return { npcId: cap.id, voice: voiceFor(career, cap.id) };
-    return { npcId: 'capitaine', voice: effectiveVoice(SYSTEM_VOICE, 'capitaine', 'capitaine') };
+    if (cap) return { npcId: cap.id, voice: voiceFor(career, cap.id), kind: 'capitaine' };
+    return { npcId: 'capitaine', voice: effectiveVoice(SYSTEM_VOICE, 'capitaine', 'capitaine'), kind: 'capitaine' };
   }
-  if (speaker === 'public') return { npcId: 'public', voice: CROWD_VOICE };
-  if (speaker === 'commentateur') return { npcId: 'commentateur', voice: COMMENTATOR_VOICE };
+  if (speaker === 'public') return { npcId: 'public', voice: CROWD_VOICE, kind: 'supporter' };
+  if (speaker === 'commentateur') return { npcId: 'commentateur', voice: COMMENTATOR_VOICE, kind: 'commentateur' };
   // Coéquipier, adversaire, arbitre : chacun sa voix, stable d'un match à l'autre.
   const kind = speaker === 'coequipier' ? 'coequipier' : speaker === 'adversaire' ? 'adversaire' : undefined;
-  return { npcId: speaker, voice: effectiveVoice({ ...SYSTEM_VOICE, gender: 'homme', timbre: speaker }, speaker, kind) };
+  return { npcId: speaker, voice: effectiveVoice({ ...SYSTEM_VOICE, gender: 'homme', timbre: speaker }, speaker, kind), ...(kind ? { kind } : {}) };
 }
 
 function EventRow({ e, career }: { e: MatchEvent; career: CareerState }) {
@@ -217,7 +217,7 @@ export default function LiveMatch() {
     if (settings.voiceMode === 'silencieux') return;
     for (const line of narration) {
       const v = voiceForSpeaker(career, line.speaker);
-      voice.say(speech(v.npcId, line.text, v.voice));
+      voice.say(speech(v.npcId, line.text, v.voice, 'normale', v.kind));
     }
   }, [career, phase, narration, settings.voiceMode, voice]);
   // Transcription vocale → champ de réponse.

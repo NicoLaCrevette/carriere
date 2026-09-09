@@ -32,9 +32,10 @@ npm run dev
 
 Puis ouvre http://localhost:5173.
 
-Lancer le proxy (facultatif) : il sert les dialogues générés, par Ollama en
-local et sans frais, ou par l'API Anthropic si tu fournis une clé. Sans lui,
-le jeu reste jouable avec ses dialogues pré-écrits et les voix du système :
+Lancer le proxy (recommandé) : il sert les **voix neuronales** des PNJ et les
+dialogues générés — par Ollama en local et sans frais, ou par l'API Anthropic
+si tu fournis une clé. Sans lui, le jeu reste jouable avec ses dialogues
+pré-écrits et les voix du navigateur, nettement moins bonnes :
 
 ```bash
 npm run server
@@ -101,12 +102,19 @@ mots-clés.
 - **Entrée** : reconnaissance vocale du navigateur (`fr-FR`). Fonctionne dans
   Chrome et Edge. Barre espace maintenue = parler (push-to-talk), ou mode mains
   libres avec détection de fin de phrase. Le clavier reste toujours disponible.
-- **Sortie** : voix du système par défaut (gratuit, `speechSynthesis`). Même
-  avec une seule voix française installée, chaque PNJ sonne différemment : son
-  registre vient de son rôle (le coach est grave et posé, le journaliste plus
-  haut et rapide, ta mère plus aiguë) et sa signature de son identifiant, donc
-  il garde exactement la même voix toute la carrière. Une clé ElevenLabs reste
-  possible pour des voix incarnées.
+- **Sortie** : **voix neuronales, gratuites, dès que le proxy tourne**
+  (`npm run server`). Treize voix francophones réellement différentes —
+  française, belge, québécoise, suisse — attribuées par rôle : le coach, ton
+  agent et ta mère ne peuvent pas être confondus. Chaque PNJ garde la sienne
+  toute la carrière. Aucune clé, aucun compte : le proxy passe par le service
+  de lecture à voix haute d'Edge.
+  Sans proxy, repli sur les voix du navigateur. Attention, elles sont pauvres :
+  Windows n'installe que Hortense, Julie et Paul, et **on ne différencie pas
+  des personnages en transposant la même voix** — au-delà d'environ ±12 %, la
+  synthèse devient inintelligible. Les écarts de rôle restent donc dans cette
+  bande, et un test le verrouille.
+  Une clé ElevenLabs reste possible, payante, pour des voix incarnées.
+  L'écran Réglages permet d'écouter un exemple de chaque rôle.
 - **Tout vocal par défaut** : les PNJ parlent, le micro s'ouvre tout seul quand
   ils ont fini, et ta phrase part après 1,2 seconde de silence. Tu n'as jamais
   à écrire ni à cliquer. Le champ texte reste là pour corriger si tu veux.

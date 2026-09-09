@@ -4,7 +4,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import { SpeechQueue } from '../speechQueue';
-import { resolveElevenLabsVoice, resolveWebSpeechVoice, splitForSpeech, voiceFor, COMMENTATOR_VOICE } from '../voiceRegistry';
+import { effectiveVoice, resolveEdgeVoice, resolveElevenLabsVoice, resolveWebSpeechVoice, splitForSpeech, voiceFor, COMMENTATOR_VOICE, SYSTEM_VOICE } from '../voiceRegistry';
+import { NPC_KINDS } from '../../engine/types';
 import type { SpeechHandle, SpeechRequest, TTSProvider } from '../types';
 import type { VoiceProfile } from '../../engine/types';
 
@@ -113,5 +114,41 @@ describe('file de lecture', () => {
     const r = await queue.enqueue(req('b')).done;
     expect(r.interrupted).toBe(false);
     expect(provider.spoken).toHaveLength(2);
+  });
+});
+
+describe('voix : intelligibilité et différenciation', () => {
+  it('reste dans une bande où une voix de synthèse est articulée', () => {
+    // La version précédente descendait à 0.68 de hauteur et montait à 1.39 :
+    // sur les voix SAPI de Windows, le joueur ne comprenait plus rien.
+    for (const kind of NPC_KINDS) {
+      for (const id of ['a', 'b', 'npc-42', 'coach-lens', 'zzz']) {
+        const v = effectiveVoice(SYSTEM_VOICE, id, kind);
+        expect(v.pitch, `${kind}/${id}`).toBeGreaterThanOrEqual(0.88);
+        expect(v.pitch, `${kind}/${id}`).toBeLessThanOrEqual(1.14);
+        expect(v.rate, `${kind}/${id}`).toBeGreaterThanOrEqual(0.88);
+        expect(v.rate, `${kind}/${id}`).toBeLessThanOrEqual(1.12);
+      }
+    }
+  });
+
+  it('donne une voix neuronale stable et crédible par rôle', () => {
+    const profil = { ...SYSTEM_VOICE };
+    // Stable : le coach garde la même voix toute la carrière.
+    expect(resolveEdgeVoice(profil, 'coach-1', 'coach')).toBe(resolveEdgeVoice(profil, 'coach-1', 'coach'));
+    // Crédible : une mère n'hérite pas d'une voix d'homme.
+    for (const id of ['m1', 'm2', 'm3', 'm4']) {
+      expect(resolveEdgeVoice(profil, id, 'mere')).toMatch(/Ariane|Vivienne/);
+    }
+    // Différenciée : plusieurs coéquipiers ne sonnent pas tous pareil.
+    const coequipiers = new Set(['c1', 'c2', 'c3', 'c4', 'c5', 'c6'].map((id) => resolveEdgeVoice(profil, id, 'coequipier')));
+    expect(coequipiers.size).toBeGreaterThan(1);
+  });
+
+  it('réserve une voix fixe au commentateur, au public et au système', () => {
+    const p = { ...SYSTEM_VOICE };
+    expect(resolveEdgeVoice(p, 'commentateur')).toBe('fr-FR-RemyMultilingualNeural');
+    expect(resolveEdgeVoice(p, 'public')).toBe('fr-BE-GerardNeural');
+    expect(resolveEdgeVoice(p, 'systeme')).toBe('fr-FR-DeniseNeural');
   });
 });

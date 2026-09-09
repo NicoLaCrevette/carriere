@@ -10,6 +10,7 @@ import { useUiStore } from '../../store/uiStore';
 import Panel from '../components/Panel';
 import SectionTitle from '../components/SectionTitle';
 import Button from '../components/Button';
+import VoicePreview from '../components/VoicePreview';
 import SaveSlotsPanel from '../components/SaveSlotsPanel';
 
 const VOICE_MODE_LABELS: Record<VoiceMode, string> = {
@@ -228,11 +229,14 @@ export default function SettingsScreen() {
           </label>
           <label className="flex flex-col gap-1">
             <span className="text-[11px] uppercase tracking-wide text-muted">Synthèse vocale</span>
-            <select className="input" value={settings.ttsProvider} onChange={(e) => settings.setTtsProvider(e.target.value as 'webspeech' | 'elevenlabs')}>
-              <option value="webspeech">Voix du navigateur (gratuit)</option>
-              <option value="elevenlabs">ElevenLabs (clé requise)</option>
+            <select className="input" value={settings.ttsProvider} onChange={(e) => settings.setTtsProvider(e.target.value as 'auto' | 'webspeech' | 'edge' | 'elevenlabs')}>
+              <option value="auto">Automatique — voix neuronales si le proxy tourne (gratuit)</option>
+              <option value="edge">Voix neuronales, proxy requis (gratuit)</option>
+              <option value="webspeech">Voix du navigateur (gratuit, moins bon)</option>
+              <option value="elevenlabs">ElevenLabs (clé requise, payant)</option>
             </select>
           </label>
+          <VoicePreview speechRate={settings.speechRate} />
           {settings.ttsProvider === 'elevenlabs' && (
             <label className="flex flex-col gap-1">
               <span className="text-[11px] uppercase tracking-wide text-muted">Clé ElevenLabs (stockée localement)</span>

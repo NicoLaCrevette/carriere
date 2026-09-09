@@ -47,7 +47,7 @@ export default function ConversationPanel() {
       // Première réplique : le cadre est annoncé, sinon un joueur qui écoute sans lire ne sait ni où il est ni à qui il parle.
       const premiere = active.turns.length === 1 && !active.turns[0]!.playerText;
       if (premiere) voice.say(speech('systeme', `${active.title}. ${lastTurn.npcName}, ${humanize(lastTurn.npcKind).toLowerCase()}.`, SYSTEM_VOICE, 'haute'));
-      const handle = voice.say(speech(lastTurn.npcId, text, npcVoice, 'haute'));
+      const handle = voice.say(speech(lastTurn.npcId, text, npcVoice, 'haute', lastTurn.npcKind));
       if (mainsLibres && !active.done) {
         void handle.done.then(() => {
           if (!useSceneStore.getState().busy) voice.startListening();

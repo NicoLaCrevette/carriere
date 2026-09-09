@@ -4,10 +4,11 @@
  * direct éditable, file de lecture avec barge-in, sous-titres, rejeu.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { VoiceMode, VoiceProfile } from '../engine/types';
+import type { NpcKind, VoiceMode, VoiceProfile } from '../engine/types';
 import { SpeechQueue } from './speechQueue';
 import { WebSpeechTTS } from './tts/webSpeechTTS';
 import { ElevenLabsTTS, SilentTTS } from './tts/elevenLabsTTS';
+import { EdgeTTS } from './tts/edgeTTS';
 import { WebSpeechSTT } from './stt/webSpeechSTT';
 import { RecorderSTT } from './stt/recorderSTT';
 import type { SpeechHandle, SpeechRequest, STTProvider, SubtitleEvent, TTSProvider } from './types';
@@ -16,7 +17,7 @@ export interface VoiceSettings {
   mode: VoiceMode;
   pushToTalk: boolean;
   speechRate: number;
-  ttsProvider: 'webspeech' | 'elevenlabs';
+  ttsProvider: 'auto' | 'webspeech' | 'edge' | 'elevenlabs';
   elevenLabsKey: string;
 }
 
@@ -71,11 +72,25 @@ export function useVoice(settings: VoiceSettings): VoiceApi {
   const keyRef = useRef(settings.elevenLabsKey);
   keyRef.current = settings.elevenLabsKey;
 
+  // En mode automatique, on part des voix du navigateur (immédiates) et on bascule
+  // sur les voix neuronales dès que le proxy a confirmé qu'elles répondent. Sans
+  // cela, la première réplique attendrait une requête réseau pour rien.
+  const [edgeDisponible, setEdgeDisponible] = useState(false);
+  useEffect(() => {
+    if (settings.ttsProvider !== 'auto' && settings.ttsProvider !== 'edge') return;
+    let vivant = true;
+    void new EdgeTTS().available().then((ok) => {
+      if (vivant) setEdgeDisponible(ok);
+    });
+    return () => { vivant = false; };
+  }, [settings.ttsProvider]);
+
   const provider = useMemo<TTSProvider>(() => {
     if (settings.mode === 'silencieux') return new SilentTTS();
     if (settings.ttsProvider === 'elevenlabs' && settings.elevenLabsKey.trim()) return new ElevenLabsTTS({ getKey: () => keyRef.current });
+    if (settings.ttsProvider === 'edge' || (settings.ttsProvider === 'auto' && edgeDisponible)) return new EdgeTTS();
     return new WebSpeechTTS();
-  }, [settings.mode, settings.ttsProvider, settings.elevenLabsKey]);
+  }, [settings.mode, settings.ttsProvider, settings.elevenLabsKey, edgeDisponible]);
 
   const queue = useMemo(() => new SpeechQueue(provider), []);
   useEffect(() => {
@@ -177,6 +192,12 @@ export function useVoice(settings: VoiceSettings): VoiceApi {
 }
 
 /** Requête de parole prête à l'emploi. */
-export function speech(npcId: string, text: string, voice: VoiceProfile, priority: 'normale' | 'haute' = 'normale'): Omit<SpeechRequest, 'id'> {
-  return { npcId, text, voice, priority };
+export function speech(
+  npcId: string,
+  text: string,
+  voice: VoiceProfile,
+  priority: 'normale' | 'haute' = 'normale',
+  kind?: NpcKind,
+): Omit<SpeechRequest, 'id'> {
+  return { npcId, text, voice, priority, ...(kind ? { kind } : {}) };
 }

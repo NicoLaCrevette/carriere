@@ -15,6 +15,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import type { ZodTypeAny } from 'zod';
 import { DEFAULT_MODELS, LLM_TASKS, type LlmTaskId, type LlmTier } from '../src/llm/tasks';
 import { chooseOllamaModels, extractJson, ollamaChatBody, OLLAMA_DEFAULT_URL, stripThinking } from '../src/llm/ollama';
+import { listFrenchVoices, synthesize } from './edgeVoices';
 
 /** Mots-clés de contrainte retirés du JSON Schema envoyé à l'API (la validation fine reste côté client, avec Zod). */
 const STRIPPED_KEYWORDS = new Set(['minLength', 'maxLength', 'minItems', 'maxItems', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'pattern', 'format', 'default', '$schema', 'markdownDescription']);
@@ -383,6 +384,39 @@ app.post('/api/llm/stream', async (req: Request, res: Response) => {
     send({ error: errorPayload(e).error });
   } finally {
     res.end();
+  }
+});
+
+// ── Voix neuronales d'Edge : gratuites, sans clé, servies en local ──────────────────────────────
+
+app.get('/api/voices/edge/status', async (_req: Request, res: Response) => {
+  try {
+    const voices = await listFrenchVoices();
+    res.json({ available: voices.length > 0, voices });
+  } catch (e) {
+    res.json({ available: false, voices: [], error: e instanceof Error ? e.message : 'injoignable' });
+  }
+});
+
+app.post('/api/voices/edge', async (req: Request, res: Response) => {
+  const { text, voice, rate, pitch } = req.body ?? {};
+  if (typeof text !== 'string' || !text.trim() || typeof voice !== 'string') {
+    res.status(400).json({ error: 'text et voice requis.' });
+    return;
+  }
+  try {
+    const audio = await synthesize({
+      text,
+      voice,
+      ...(typeof rate === 'number' ? { rate } : {}),
+      ...(typeof pitch === 'number' ? { pitch } : {}),
+    });
+    res.setHeader('content-type', 'audio/mpeg');
+    // L'audio est déterministe pour (texte, voix, prosodie) : le navigateur peut le garder.
+    res.setHeader('cache-control', 'public, max-age=86400');
+    res.send(audio);
+  } catch (e) {
+    res.status(502).json({ error: e instanceof Error ? e.message : 'Synthèse indisponible' });
   }
 });
 

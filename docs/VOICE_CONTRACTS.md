@@ -1,5 +1,15 @@
 # Contrats de la couche vocale (Phase 5)
 
+> **Règle apprise à l'usage, à ne pas contourner.** On ne différencie pas deux
+> personnages en transposant la même voix. Les voix SAPI de Windows (Hortense,
+> Julie, Paul) sont déjà synthétiques : au-delà d'environ ±12 % de hauteur ou de
+> débit, elles deviennent inintelligibles. Une version précédente écartait les
+> rôles de 0,68 à 1,39 de hauteur ; le joueur ne comprenait plus rien. Les
+> registres de `voiceRegistry.ts` restent donc dans une bande étroite, vérifiée
+> par un test, et la différenciation vient d'une **voix réellement différente** :
+> `resolveEdgeVoice` pour les voix neuronales du proxy, `resolveWebSpeechVoice`
+> pour celles du navigateur.
+
 Tout vit dans `src/voice/`. Aucune dépendance du moteur vers cette couche. Les
 profils vocaux (`VoiceProfile`) sont déjà dans `CareerState.world.npcs[id].voice`
 et persistent toute la carrière : cette couche les **résout** en voix concrètes,

@@ -2,7 +2,7 @@
  * Types de la couche vocale (§7). Les profils vocaux persistants vivent dans
  * `CareerState.world.npcs[id].voice` ; cette couche les résout en voix réelles.
  */
-import type { VoiceProfile } from '../engine/types';
+import type { NpcKind, VoiceProfile } from '../engine/types';
 
 export interface SpeechRequest {
   /** Unique par réplique (cache de précharge). */
@@ -10,6 +10,12 @@ export interface SpeechRequest {
   npcId: string;
   text: string;
   voice: VoiceProfile;
+  /**
+   * Rôle du PNJ, quand l'appelant le connaît. Sert au fournisseur neuronal à
+   * choisir une voix crédible : sans lui, une mère peut hériter d'une voix
+   * d'homme de cinquante ans, ce qui s'entend immédiatement.
+   */
+  kind?: NpcKind;
   /** Une consigne du banc en match peut couper une ligne d'ambiance. */
   priority: 'normale' | 'haute';
 }
@@ -28,7 +34,7 @@ export interface SpeakOptions {
 }
 
 export interface TTSProvider {
-  readonly name: 'webspeech' | 'elevenlabs' | 'silencieux';
+  readonly name: 'webspeech' | 'edge' | 'elevenlabs' | 'silencieux';
   available(): Promise<boolean>;
   /** Prépare l'audio sans le jouer. */
   preload(req: SpeechRequest): Promise<void>;

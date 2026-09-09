@@ -12,7 +12,8 @@ export interface SettingsState {
   pushToTalk: boolean;
   speechRate: number;
   subtitles: boolean;
-  ttsProvider: 'webspeech' | 'elevenlabs';
+  /** 'auto' : voix neuronales du proxy si elles répondent, voix du navigateur sinon. */
+  ttsProvider: 'auto' | 'webspeech' | 'edge' | 'elevenlabs';
   /** Stockée en local uniquement, jamais envoyée telle quelle ailleurs qu'au TTS. */
   elevenLabsKey: string;
   /** Vrai si une clé Anthropic a été fournie côté proxy (Phase 4). */
@@ -32,7 +33,7 @@ export interface SettingsState {
   setPushToTalk(v: boolean): void;
   setSpeechRate(v: number): void;
   setSubtitles(v: boolean): void;
-  setTtsProvider(v: 'webspeech' | 'elevenlabs'): void;
+  setTtsProvider(v: 'auto' | 'webspeech' | 'edge' | 'elevenlabs'): void;
   setElevenLabsKey(v: string): void;
   setLastSlotId(id: string | null): void;
   setDatasetId(id: string | null): void;
@@ -46,7 +47,7 @@ export const useSettingsStore = create<SettingsState>()(
       pushToTalk: false,
       speechRate: 1,
       subtitles: true,
-      ttsProvider: 'webspeech',
+      ttsProvider: 'auto',
       elevenLabsKey: '',
       apiKeyPresent: false,
       llmEnabled: true,
@@ -70,10 +71,15 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'carriere-settings',
       // v2 : le mode « tout vocal » mains libres devient le défaut, y compris pour les réglages déjà enregistrés.
-      version: 2,
+      version: 3,
       migrate: (persisted, version) => {
         const state = (persisted ?? {}) as Partial<SettingsState>;
-        if (version < 2) return { ...state, voiceMode: 'vocal' as VoiceMode, pushToTalk: false };
+        if (version < 2) return { ...state, voiceMode: 'vocal' as VoiceMode, pushToTalk: false, ttsProvider: 'auto' as const };
+        // v3 : les voix du navigateur (Hortense, Julie, Paul) sont trop pauvres pour
+        // porter des personnages. Qui n'avait rien choisi passe en détection automatique.
+        if (version < 3 && (state.ttsProvider === 'webspeech' || state.ttsProvider === undefined)) {
+          return { ...state, ttsProvider: 'auto' as const };
+        }
         return state as SettingsState;
       },
     },
