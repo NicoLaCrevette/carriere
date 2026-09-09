@@ -178,9 +178,16 @@ export default {
       if (strict && (reponse.status === 400 || reponse.status === 422)) {
         reponse = await appeler(false);
       }
+      if (reponse.status === 429) {
+        // Palier gratuit : une requête par seconde. On dit au client combien de
+        // temps attendre, sinon il réessaie aussitôt et gâche sa tentative.
+        const entete = Number(reponse.headers.get('retry-after'));
+        const attente = Number.isFinite(entete) && entete > 0 ? entete * 1000 : 1200;
+        return new Response(JSON.stringify({ ok: false, error: 'Limite de débit atteinte.', retryable: true, retryAfterMs: attente }), { status: 429, headers: head });
+      }
       if (!reponse.ok) {
         const texte = await reponse.text();
-        return new Response(JSON.stringify({ ok: false, error: `Fournisseur ${reponse.status} : ${texte.slice(0, 200)}`, retryable: reponse.status >= 500 || reponse.status === 429 }), { status: 502, headers: head });
+        return new Response(JSON.stringify({ ok: false, error: `Fournisseur ${reponse.status} : ${texte.slice(0, 200)}`, retryable: reponse.status >= 500 }), { status: 502, headers: head });
       }
       const json = await reponse.json<{ choices?: { message?: { content?: string } }[]; usage?: { prompt_tokens?: number; completion_tokens?: number } }>();
       const contenu = json.choices?.[0]?.message?.content ?? '';

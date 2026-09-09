@@ -105,7 +105,15 @@ export async function llmAvailable(force = false): Promise<boolean> {
   return availability.value;
 }
 
-interface ProxyResponse { ok: boolean; data?: unknown; error?: string; retryable?: boolean; usage?: { input_tokens?: number; output_tokens?: number } }
+interface ProxyResponse {
+  ok: boolean;
+  data?: unknown;
+  error?: string;
+  retryable?: boolean;
+  /** Limite de débit atteinte : délai à respecter avant de réessayer. */
+  retryAfterMs?: number;
+  usage?: { input_tokens?: number; output_tokens?: number };
+}
 
 async function postTask(task: LlmTaskId, tier: LlmTier, system: string, messages: LlmMessage[], timeoutMs: number, signal?: AbortSignal, stream = false): Promise<Response> {
   const f = doFetch();
@@ -163,6 +171,9 @@ export async function callStructured<T>(task: LlmTaskId, system: string, message
       if (!res.ok || !body.ok) {
         lastReason = body.error ?? `HTTP ${res.status}`;
         if (body.retryable === false || res.status === 401) break;
+        // Sur une limite de débit, réessayer aussitôt retombe dans la limite et
+        // gâche la seule tentative restante : on laisse passer le délai annoncé.
+        if (body.retryAfterMs) await new Promise((r) => setTimeout(r, Math.min(body.retryAfterMs!, 2000)));
         continue;
       }
       const parsed = schema ? schema.safeParse(body.data) : { success: true as const, data: body.data };

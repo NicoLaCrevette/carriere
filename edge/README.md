@@ -74,10 +74,23 @@ automatiquement en `json_object` avec le schéma dans la consigne. Aucun réglag
 
 ## Coût et limites
 
-Le palier gratuit suffit à une carrière entière : le jeu appelle le modèle
-quelques dizaines de fois par match. Si la limite de débit est atteinte, le jeu
-retombe tout seul sur ses textes pré-écrits, sans erreur visible et sans
-interrompre le match.
+Ce n'est pas illimité, mais l'écart est tel que ça ne se sent pas. Le palier
+gratuit de Mistral autorise **1 requête par seconde, 500 000 tokens par minute
+et 1 milliard de tokens par mois** (chiffres à vérifier dans la console, section
+*Limits* : Mistral ne les publie plus).
+
+Le jeu consomme, estimé à partir des `maxTokens` réels de chaque tâche et de la
+taille des prompts : environ **1 400 tokens par appel**, trois appels par
+situation, une douzaine de situations par match — soit **~60 000 tokens par
+match**, ~2,4 millions par saison. Le plafond mensuel représente donc de l'ordre
+de **20 carrières complètes par mois**.
+
+La vraie contrainte est le débit, pas le volume. Les appels d'un match sont
+séquentiels (décrire → tu réponds → classer → narrer), donc une requête par
+seconde passe. Quand la limite est malgré tout atteinte, le fournisseur répond
+429 : la fonction renvoie le délai à respecter, le client attend puis réessaie
+une fois, et à défaut le jeu retombe sur ses textes pré-écrits — sans erreur
+visible et sans interrompre le match.
 
 Cette fonction n'a pas été testée en conditions réelles : elle demande deux
 comptes que je n'ai pas. Le contrat qu'elle expose est en revanche celui du

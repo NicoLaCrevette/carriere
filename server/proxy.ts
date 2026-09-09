@@ -141,6 +141,14 @@ ${JSON.stringify(schema)}`
 
   let res = await appeler(!!schema);
   if (schema && (res.status === 400 || res.status === 422)) res = await appeler(false);
+  if (res.status === 429) {
+    // Palier gratuit : une requête par seconde. Le client doit attendre avant de
+    // réessayer, sinon il retombe aussitôt dans la limite et perd sa tentative.
+    const entete = Number(res.headers.get('retry-after'));
+    const err = new Error('429') as Error & { retryAfterMs?: number };
+    err.retryAfterMs = Number.isFinite(entete) && entete > 0 ? entete * 1000 : 1200;
+    throw err;
+  }
   if (!res.ok) throw new Error(`${res.status} ${(await res.text()).slice(0, 160)}`);
   const json = (await res.json()) as {
     choices?: { message?: { content?: string } }[];
@@ -354,7 +362,13 @@ app.post('/api/llm', async (req: Request, res: Response) => {
       res.json({ ok: true, data: valid.data, usage: { input_tokens: out.promptTokens, output_tokens: out.outputTokens }, model });
     } catch (e) {
       const timeout = e instanceof Error && (e.name === 'TimeoutError' || e.name === 'AbortError');
-      res.status(timeout ? 504 : 502).json({ ok: false, error: timeout ? 'Mistral a dépassé le délai.' : `Mistral injoignable : ${e instanceof Error ? e.message : 'erreur'}`, retryable: true });
+      const attente = (e as { retryAfterMs?: number }).retryAfterMs;
+      res.status(timeout ? 504 : attente ? 429 : 502).json({
+        ok: false,
+        error: timeout ? 'Mistral a dépassé le délai.' : attente ? 'Limite de débit Mistral atteinte.' : `Mistral injoignable : ${e instanceof Error ? e.message : 'erreur'}`,
+        retryable: true,
+        ...(attente ? { retryAfterMs: attente } : {}),
+      });
     }
     return;
   }
