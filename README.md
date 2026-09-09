@@ -77,31 +77,48 @@ trop lente retombe sur les textes écrits sans jamais bloquer le match.
 Toutes les tâches passent par une sortie JSON contrainte par schéma, ce qui
 neutralise le raisonnement en anglais que certains modèles émettent.
 
-## Mistral, gratuit, sans rien installer
+## Un modèle hébergé, gratuit, sans rien installer
 
 Si tu ne veux pas faire tourner Ollama — ou si tu veux jouer **en ligne**, sans
-que ce PC soit allumé — Mistral est la meilleure voie : palier gratuit sans
-carte bancaire, aucune installation, et des modèles français natifs, ce qui
-s'entend dans un jeu entièrement en français.
+que ce PC soit allumé — il suffit d'une clé chez un fournisseur compatible
+OpenAI. Tous ceux ci-dessous ont un palier gratuit :
 
-1. Crée une clé sur <https://console.mistral.ai> (palier « Experiment »).
-2. Mets-la dans `.env` :
+| Fournisseur | `LLM_BASE_URL` | Modèle courant |
+|---|---|---|
+| **Mistral** ([console](https://console.mistral.ai)) | `https://api.mistral.ai/v1` | `mistral-small-latest` |
+| **Groq** ([console](https://console.groq.com)) | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
+| **Google AI Studio** ([console](https://aistudio.google.com)) | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-2.0-flash` |
+| **Cerebras** ([console](https://cloud.cerebras.ai)) | `https://api.cerebras.ai/v1` | `llama-3.3-70b` |
+
+Mistral est le défaut : ce sont des modèles français natifs, et le jeu est
+entièrement en français. Mais **prends celui où tu arrives à ouvrir un compte** —
+certaines consoles refusent l'accès selon l'espace de travail ou l'entreprise.
 
 ```bash
-echo "MISTRAL_API_KEY=ta-cle" >> .env
+echo "LLM_API_KEY=ta-cle" >> .env
 ```
 
-Le proxy la détecte au démarrage. L'ordre par défaut reste Ollama d'abord (il ne
-consomme aucun quota et tourne hors ligne), puis Mistral, puis Anthropic.
-`LLM_PROVIDER=mistral` force Mistral.
+Si ce n'est pas Mistral, ajoute aussi l'adresse et le modèle :
+
+```bash
+printf 'LLM_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL_COURANT=llama-3.3-70b-versatile
+LLM_MODEL_PREMIUM=llama-3.3-70b-versatile
+' >> .env
+```
+
+Le proxy détecte la clé au démarrage et l'écran Réglages affiche le nom du
+fournisseur. L'ordre par défaut reste Ollama d'abord (il ne consomme aucun quota
+et tourne hors ligne), puis le fournisseur hébergé, puis Anthropic.
+`LLM_PROVIDER=hote` force le fournisseur hébergé.
 
 Le schéma JSON de chaque tâche contraint le décodage (`response_format:
-json_schema`, strict) : le modèle ne *peut* pas sortir du format attendu. Si le
-fournisseur refuse ce mode, le proxy retente seul en `json_object`.
+json_schema`, strict) quand le fournisseur le sait faire ; sinon le proxy
+retente seul en `json_object`. Sur une limite de débit, il attend le délai
+annoncé avant de réessayer, puis retombe sur les textes pré-écrits.
 
 **Pour la version en ligne**, la même clé se dépose dans un secret Cloudflare et
-la fonction de `edge/` s'en sert : voir `edge/README.md`. C'est ce qui donne des
-dialogues générés depuis n'importe quel navigateur, PC éteint.
+la fonction de `edge/` s'en sert : voir `edge/README.md`.
 
 ## Clé API Anthropic (facultative, payante)
 

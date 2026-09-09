@@ -5,10 +5,21 @@ volontaire, il est entièrement jouable ainsi, et ça ne coûte rien. Cette
 fonction ajoute des dialogues et une narration générés, **sans PC allumé** —
 c'est ce qui manque quand on joue ailleurs que chez soi.
 
-Elle utilise **Mistral** par défaut. Deux raisons : le palier gratuit suffit
-largement, et ce sont des modèles français natifs — le jeu est entièrement en
-français, et c'est là que la différence s'entend. Tout fournisseur compatible
-OpenAI reste utilisable en changeant `LLM_BASE` et les modèles.
+Elle marche avec **n'importe quel fournisseur compatible OpenAI**. Mistral est
+le défaut — modèles français natifs, et le jeu est entièrement en français —
+mais prends celui où tu arrives à ouvrir un compte : certaines consoles refusent
+l'accès selon l'espace de travail ou l'entreprise. Tous ceux-ci ont un palier
+gratuit :
+
+| Fournisseur | `LLM_BASE` | Modèle |
+|---|---|---|
+| Mistral | `https://api.mistral.ai/v1` | `mistral-small-latest` |
+| Groq | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
+| Google AI Studio | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-2.0-flash` |
+| Cerebras | `https://api.cerebras.ai/v1` | `llama-3.3-70b` |
+
+Ces trois valeurs se règlent dans `wrangler.toml` (`LLM_BASE`,
+`LLM_MODEL_COURANT`, `LLM_MODEL_PREMIUM`).
 
 La clé reste dans un secret Cloudflare. Elle n'apparaît jamais dans le
 navigateur, contrairement à ce qui arriverait si le jeu appelait l'API
@@ -17,11 +28,11 @@ par n'importe qui.
 
 ## Mise en place, une seule fois
 
-1. Crée un compte sur <https://console.mistral.ai> et une clé d'API. Le palier
-   gratuit (« Experiment ») ne demande aucune carte ; il est limité en débit
-   (de l'ordre d'une requête par seconde), ce qui suffit très largement à un
-   joueur seul. Mistral ne publie plus les limites exactes : elles sont dans la
-   console, section *Limits*.
+1. Crée une clé chez l'un des fournisseurs du tableau ci-dessus. Les paliers
+   gratuits ne demandent pas de carte bancaire et sont limités en débit (souvent
+   une requête par seconde), ce qui suffit très largement à un joueur seul.
+   Si tu changes de fournisseur, ajuste `LLM_BASE` et les modèles dans
+   `wrangler.toml` avant de déployer.
 2. Crée un compte Cloudflare (gratuit) : <https://dash.cloudflare.com>.
 3. Depuis ce dossier :
 

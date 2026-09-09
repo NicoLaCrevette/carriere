@@ -56,23 +56,40 @@ let client: Anthropic | null = apiKey ? new Anthropic({ apiKey }) : null;
 
 // ── Fournisseur local Ollama (gratuit, hors ligne) ────────────────────────
 
-type Provider = 'ollama' | 'mistral' | 'anthropic' | 'aucun';
+type Provider = 'ollama' | 'hote' | 'anthropic' | 'aucun';
 
 const OLLAMA_URL = (process.env.OLLAMA_URL ?? OLLAMA_DEFAULT_URL).replace(/\/+$/, '');
 
 /**
- * Mistral : palier gratuit, modèles français natifs, aucune installation.
+ * Fournisseur hébergé compatible OpenAI.
  *
- * C'est le fournisseur à conseiller quand on ne veut pas faire tourner Ollama :
- * meilleur français qu'un modèle local de 8 milliards de paramètres, et la même
- * clé sert ensuite à la version en ligne via `edge/`.
+ * Volontairement générique : Mistral par défaut (palier gratuit, modèles
+ * français natifs), mais Groq, Google AI Studio, Cerebras, OpenRouter et les
+ * autres s'utilisent en changeant deux variables. Il ne faut pas que le jeu
+ * dépende d'un compte qu'on n'arrive pas à ouvrir — c'est arrivé.
+ *
+ * La même clé sert ensuite à la version en ligne, via la fonction de `edge/`.
  */
-const MISTRAL_KEY = (process.env.MISTRAL_API_KEY ?? '').trim();
-const MISTRAL_URL = (process.env.MISTRAL_URL ?? 'https://api.mistral.ai/v1').replace(/\/+$/, '');
-const MISTRAL_MODELS: Record<LlmTier, string> = {
-  courant: process.env.MISTRAL_MODEL_COURANT ?? 'mistral-small-latest',
-  premium: process.env.MISTRAL_MODEL_PREMIUM ?? 'mistral-large-latest',
+// `MISTRAL_API_KEY` reste accepté : c'était le nom avant que le proxy ne soit générique.
+const HOTE_KEY = (process.env.LLM_API_KEY ?? process.env.MISTRAL_API_KEY ?? '').trim();
+const HOTE_URL = (process.env.LLM_BASE_URL ?? process.env.MISTRAL_URL ?? 'https://api.mistral.ai/v1').replace(/\/+$/, '');
+const HOTE_COURANT = process.env.LLM_MODEL_COURANT ?? process.env.MISTRAL_MODEL_COURANT ?? 'mistral-small-latest';
+const HOTE_MODELS: Record<LlmTier, string> = {
+  courant: HOTE_COURANT,
+  // Sans modèle « premium » explicite, on reprend le courant : un nom Mistral par
+  // défaut ferait échouer toutes les grandes scènes chez un autre fournisseur.
+  premium: process.env.LLM_MODEL_PREMIUM ?? process.env.MISTRAL_MODEL_PREMIUM
+    ?? (process.env.LLM_MODEL_COURANT || process.env.MISTRAL_MODEL_COURANT ? HOTE_COURANT : 'mistral-large-latest'),
 };
+/** Nom lisible du fournisseur, déduit de l'adresse, pour l'écran Réglages. */
+const HOTE_NOM = (() => {
+  try {
+    const h = new URL(HOTE_URL).hostname.replace(/^api\./, '').replace(/\.(ai|com|dev)$/, '');
+    return h.charAt(0).toUpperCase() + h.slice(1);
+  } catch {
+    return 'Fournisseur hébergé';
+  }
+})();
 /** 'auto' (défaut) : Ollama s'il répond, sinon Anthropic si une clé est là, sinon les textes de repli du jeu. */
 const PREFERRED: 'auto' | Provider = (process.env.LLM_PROVIDER as 'auto' | Provider) || 'auto';
 
@@ -100,14 +117,14 @@ async function refreshOllama(force = false): Promise<string[]> {
 }
 
 /**
- * Un appel à Mistral, au contrat OpenAI.
+ * Un appel au fournisseur hébergé, au contrat OpenAI.
  *
  * Le schéma contraint le décodage (`json_schema`, strict) : le modèle ne peut
  * pas sortir du format. Si le fournisseur refuse ce mode, on retente une fois en
  * `json_object` avec le schéma dans la consigne — c'est ce que fait aussi la
  * fonction hébergée de `edge/`.
  */
-async function mistralChat(
+async function hoteChat(
   _task: LlmTaskId,
   model: string,
   system: string,
@@ -123,9 +140,9 @@ Réponds UNIQUEMENT par un objet JSON valide conforme à ce schéma, sans texte 
 ${JSON.stringify(schema)}`
     : system;
 
-  const appeler = async (strict: boolean): Promise<globalThis.Response> => fetch(`${MISTRAL_URL}/chat/completions`, {
+  const appeler = async (strict: boolean): Promise<globalThis.Response> => fetch(`${HOTE_URL}/chat/completions`, {
     method: 'POST',
-    headers: { authorization: `Bearer ${MISTRAL_KEY}`, 'content-type': 'application/json' },
+    headers: { authorization: `Bearer ${HOTE_KEY}`, 'content-type': 'application/json' },
     body: JSON.stringify({
       model,
       messages: [{ role: 'system', content: strict ? system : consigneAvecSchema }, ...messages],
@@ -142,7 +159,7 @@ ${JSON.stringify(schema)}`
   let res = await appeler(!!schema);
   if (schema && (res.status === 400 || res.status === 422)) res = await appeler(false);
   if (res.status === 429) {
-    // Palier gratuit : une requête par seconde. Le client doit attendre avant de
+    // Palier gratuit : souvent une requête par seconde. Le client doit attendre avant de
     // réessayer, sinon il retombe aussitôt dans la limite et perd sa tentative.
     const entete = Number(res.headers.get('retry-after'));
     const err = new Error('429') as Error & { retryAfterMs?: number };
@@ -163,11 +180,11 @@ ${JSON.stringify(schema)}`
 
 async function currentProvider(): Promise<Provider> {
   if (PREFERRED === 'anthropic') return client ? 'anthropic' : 'aucun';
-  if (PREFERRED === 'mistral') return MISTRAL_KEY ? 'mistral' : 'aucun';
+  if (PREFERRED === 'hote') return HOTE_KEY ? 'hote' : 'aucun';
   if (PREFERRED === 'ollama') return (await refreshOllama()).length > 0 ? 'ollama' : 'aucun';
   // Ollama d'abord : il ne consomme aucun quota et tourne hors ligne.
   if ((await refreshOllama()).length > 0) return 'ollama';
-  if (MISTRAL_KEY) return 'mistral';
+  if (HOTE_KEY) return 'hote';
   return client ? 'anthropic' : 'aucun';
 }
 
@@ -260,10 +277,10 @@ app.get('/api/key/status', async (_req, res) => {
     present: provider !== 'aucun',
     provider,
     // Mistral est gratuit sur son palier « Experiment » : le jeu doit le dire.
-    gratuit: provider === 'ollama' || provider === 'mistral',
-    models: provider === 'ollama' && ollamaByTier ? ollamaByTier : provider === 'mistral' ? MISTRAL_MODELS : DEFAULT_MODELS,
+    gratuit: provider === 'ollama' || provider === 'hote',
+    models: provider === 'ollama' && ollamaByTier ? ollamaByTier : provider === 'hote' ? HOTE_MODELS : DEFAULT_MODELS,
     ollama: { disponible: ollamaModels.length > 0, url: OLLAMA_URL, installes: ollamaModels },
-    mistral: { cle: !!MISTRAL_KEY, modeles: MISTRAL_MODELS },
+    hote: { cle: !!HOTE_KEY, nom: HOTE_NOM, url: HOTE_URL, modeles: HOTE_MODELS },
     anthropic: { cle: !!client },
   });
 });
@@ -305,7 +322,7 @@ app.post('/api/llm', async (req: Request, res: Response) => {
   }
   const provider = await currentProvider();
   if (provider === 'aucun') {
-    res.status(401).json({ ok: false, error: 'Aucun fournisseur disponible : lance Ollama, renseigne une clé Mistral (gratuite) ou une clé Anthropic.', retryable: false });
+    res.status(401).json({ ok: false, error: 'Aucun fournisseur disponible : lance Ollama, renseigne une clé de fournisseur hébergé (LLM_API_KEY) ou une clé Anthropic.', retryable: false });
     return;
   }
   const task = LLM_TASKS[body.task];
@@ -345,10 +362,10 @@ app.post('/api/llm', async (req: Request, res: Response) => {
     return;
   }
 
-  if (provider === 'mistral') {
-    const model = MISTRAL_MODELS[tier];
+  if (provider === 'hote') {
+    const model = HOTE_MODELS[tier];
     try {
-      const out = await mistralChat(body.task, model, body.system, body.messages, body.maxTokens ?? task.maxTokens, task.schema ? jsonSchemaFor(body.task, task.schema) : undefined, task.timeoutMs);
+      const out = await hoteChat(body.task, model, body.system, body.messages, body.maxTokens ?? task.maxTokens, task.schema ? jsonSchemaFor(body.task, task.schema) : undefined, task.timeoutMs);
       if (!task.schema) {
         res.json({ ok: true, data: out.content, usage: { input_tokens: out.promptTokens, output_tokens: out.outputTokens }, model });
         return;
@@ -365,7 +382,7 @@ app.post('/api/llm', async (req: Request, res: Response) => {
       const attente = (e as { retryAfterMs?: number }).retryAfterMs;
       res.status(timeout ? 504 : attente ? 429 : 502).json({
         ok: false,
-        error: timeout ? 'Mistral a dépassé le délai.' : attente ? 'Limite de débit Mistral atteinte.' : `Mistral injoignable : ${e instanceof Error ? e.message : 'erreur'}`,
+        error: timeout ? `${HOTE_NOM} a dépassé le délai.` : attente ? `Limite de débit atteinte (${HOTE_NOM}).` : `${HOTE_NOM} injoignable : ${e instanceof Error ? e.message : 'erreur'}`,
         retryable: true,
         ...(attente ? { retryAfterMs: attente } : {}),
       });
@@ -424,7 +441,7 @@ app.post('/api/llm/stream', async (req: Request, res: Response) => {
   }
   const provider = await currentProvider();
   if (provider === 'aucun') {
-    res.status(401).json({ ok: false, error: 'Aucun fournisseur disponible : lance Ollama, renseigne une clé Mistral (gratuite) ou une clé Anthropic.', retryable: false });
+    res.status(401).json({ ok: false, error: 'Aucun fournisseur disponible : lance Ollama, renseigne une clé de fournisseur hébergé (LLM_API_KEY) ou une clé Anthropic.', retryable: false });
     return;
   }
   const task = LLM_TASKS[body.task];

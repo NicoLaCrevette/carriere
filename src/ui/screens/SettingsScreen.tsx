@@ -23,7 +23,8 @@ type ProxyStatus = 'inconnu' | 'injoignable' | 'sans_cle' | 'pret';
 
 interface ProxyInfo {
   present: boolean;
-  provider: 'ollama' | 'mistral' | 'anthropic' | 'aucun';
+  provider: 'ollama' | 'hote' | 'anthropic' | 'aucun';
+  hote?: { cle: boolean; nom: string; url: string };
   gratuit: boolean;
   models: { courant: string; premium: string };
   ollama: { disponible: boolean; url: string; installes: string[] };
@@ -108,7 +109,7 @@ export default function SettingsScreen() {
           right={
             <span className={`text-[11px] uppercase tracking-wide ${info?.gratuit ? 'text-signal-green' : proxyStatus === 'pret' ? 'text-accent' : proxyStatus === 'injoignable' ? 'text-signal-red' : 'text-muted'}`}>
               {info?.provider === 'ollama' ? 'Ollama local · gratuit'
-                : info?.provider === 'mistral' ? 'Mistral · gratuit'
+                : info?.provider === 'hote' ? `${info.hote?.nom ?? 'Fournisseur hébergé'} · gratuit`
                 : info?.provider === 'anthropic' ? 'API Anthropic · payante'
                   : proxyStatus === 'sans_cle' ? 'Proxy en ligne, aucun modèle'
                     : proxyStatus === 'injoignable' ? 'Proxy injoignable' : '…'}
@@ -121,8 +122,9 @@ export default function SettingsScreen() {
           <p className="text-xs text-muted">
             Le jeu est jouable sans rien : sans modèle, il utilise ses textes pré-écrits et un classement par mots-clés.
             Pour des dialogues générés gratuitement, deux voies : lance Ollama sur ta machine (le proxy le
-            détecte tout seul, tout reste hors ligne), ou pose une clé Mistral dans <code>.env</code>
-            (<code>MISTRAL_API_KEY</code>) — le palier gratuit suffit, les modèles sont français, et rien à installer.
+            détecte tout seul, tout reste hors ligne), ou pose la clé d’un fournisseur hébergé dans <code>.env</code>
+            (<code>LLM_API_KEY</code>, et <code>LLM_BASE_URL</code> si ce n’est pas Mistral). Mistral, Groq,
+            Google AI Studio et Cerebras ont tous un palier gratuit ; n’importe lequel fait l’affaire.
             Une clé Anthropic reste possible, payante, et n'apparaît jamais dans le navigateur.
           </p>
           <label className="flex items-center gap-2">
