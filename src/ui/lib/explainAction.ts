@@ -65,6 +65,15 @@ export interface ExplicationAction {
   pires: FacteurLisible[];
   /** Une phrase qui résume, pour la lire à voix haute ou l'afficher seule. */
   resume: string;
+  /**
+   * La cause en toutes lettres, sans aucun chiffre.
+   *
+   * Voir un pourcentage avant chaque geste rappelle au joueur que ce n'est pas
+   * lui qui décide, même quand l'équilibrage est juste : une occasion à 12 %
+   * décourage, alors que « le gardien était bien sorti et tu étais sous
+   * pression » se comprend et se corrige. Le chiffre reste accessible d'un clic.
+   */
+  causeLisible: string;
 }
 
 const SEUIL = 0.02; // en dessous de 2 % d'effet, ce n'est pas la peine d'en parler.
@@ -100,7 +109,28 @@ export function expliquerAction(outcome: ActionOutcome): ExplicationAction {
     facteurs,
     pires,
     resume: resumer(probabilite, outcome.roll < probabilite, pires, plafonne),
+    causeLisible: enMots(outcome.roll < probabilite, facteurs, pires, plafonne),
   };
+}
+
+/**
+ * La même lecture, sans chiffre : ce qui a pesé, nommé. Sur une réussite on cite
+ * ce qui a aidé ; sur un échec, ce qui a gêné — c'est ce que le joueur peut
+ * corriger au coup suivant.
+ */
+function enMots(reussi: boolean, facteurs: FacteurLisible[], pires: FacteurLisible[], plafonne: boolean): string {
+  const joindre = (l: string[]): string => (l.length > 1 ? `${l.slice(0, -1).join(', ')} et ${l.at(-1)}` : (l[0] ?? ''));
+  if (reussi) {
+    const aides = facteurs.filter((f) => f.aide).slice(-2).map((f) => f.label.toLowerCase());
+    if (aides.length > 0) return `Ce qui t'a aidé : ${joindre(aides)}.`;
+    const gene = pires.map((f) => f.explication).filter(Boolean);
+    return gene.length > 0 ? `C'est passé malgré tout : ${joindre(gene)}.` : 'Geste propre, rien ne te gênait.';
+  }
+  const raisons = pires.map((f) => f.explication).filter(Boolean);
+  if (raisons.length === 0) {
+    return plafonne ? 'Ce geste ne réussit jamais souvent, même bien exécuté.' : 'Rien ne te gênait vraiment : ça ne passe pas, c’est tout.';
+  }
+  return `Ce qui t'a manqué : ${joindre(raisons)}.`;
 }
 
 /**

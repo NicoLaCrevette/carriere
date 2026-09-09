@@ -136,6 +136,8 @@ Viser la lucarne rapporte plus (spectacle, réputation, moral du public) mais ra
 
 **Aucune action n'atteint jamais 100 %.** Le modèle part d'une xG de base par type de situation, que les attributs ne déplacent que de ±35 % au maximum. Plafonds durs, même avec 99 partout :
 
+> **Note d'implémentation.** Les plafonds ci-dessous n'ont jamais été le facteur limitant. Mesuré en simulation, la chaîne multiplicative (distance × densité × attributs × fatigue × pression × confiance × adversaire × difficulté) ramenait la médiane réelle au **tiers** du plafond autorisé : une reprise dans la surface se concluait à 9 % pour un plafond de 26 %, une tête à 6 % pour 17 %. Les **bases** de finition ont donc été relevées pour qu'une vraie occasion approche son plafond, sans toucher aux plafonds eux-mêmes ni à la règle des ±35 %. Après correction : 6 buts par saison en médiane pour un attaquant de 18 ans, soit le milieu de la fourchette 4-9 du §6.5.
+
 | Situation | Probabilité max |
 |---|---|
 | But vide à 2 m | 0.93 |

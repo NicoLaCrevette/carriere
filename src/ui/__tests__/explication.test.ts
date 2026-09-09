@@ -131,3 +131,33 @@ describe('portraits', () => {
     expect(avec.length).toBeLessThan(100);
   });
 });
+
+describe('la cause en toutes lettres', () => {
+  const mods = {
+    base: 0.4, distance: 0.72, densite: 0.88, attributs: 0.95, pression: 0.82,
+    forme: 1.06, plafond: 0.38, final: 0.19,
+  };
+
+  it('ne contient aucun chiffre : c’est ce qui remplace le dé à l’écran', () => {
+    for (const roll of [0.05, 0.5, 0.95]) {
+      expect(expliquerAction(issue(mods, roll)).causeLisible).not.toMatch(/\d/);
+    }
+  });
+
+  it('sur un échec, nomme ce qui a manqué', () => {
+    const e = expliquerAction(issue(mods, 0.9));
+    expect(e.causeLisible).toContain('manqué');
+    expect(e.causeLisible.length).toBeGreaterThan(20);
+  });
+
+  it('sur une réussite, ne reproche rien au joueur', () => {
+    const e = expliquerAction(issue(mods, 0.05));
+    expect(e.causeLisible).not.toContain('manqué');
+  });
+
+  it('reste lisible quand rien ne pesait', () => {
+    const neutre = { base: 0.4, plafond: 0.9, final: 0.4 };
+    expect(expliquerAction(issue(neutre, 0.9)).causeLisible.length).toBeGreaterThan(10);
+    expect(expliquerAction(issue(neutre, 0.1)).causeLisible.length).toBeGreaterThan(10);
+  });
+});

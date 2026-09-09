@@ -67,17 +67,27 @@ export const MATCH_BALANCE = {
   attributeInfluence: 0.35,
 
   /** xG / probabilité de base par situation-action, avant modificateurs et plafond. */
+  /**
+   * Bases avant modificateurs. Mesuré : la chaîne multiplicative (distance,
+   * densité, attributs, fatigue, pression, confiance, adversaire, difficulté)
+   * ramenait la médiane réelle au tiers du plafond autorisé — une occasion dans
+   * la surface se concluait à 9 % pour un plafond de 26 %, une tête à 6 % pour
+   * 17 %. Le joueur construisait l'action, parlait, et n'avait aucune chance.
+   * Les bases de finition sont remontées pour qu'une VRAIE occasion approche son
+   * plafond ; les plafonds du §6, eux, ne bougent pas, et une frappe désespérée
+   * de loin reste mauvaise (frappeHorsSurface inchangée).
+   */
   baseProbability: {
     butVideDeuxMetres: 0.85,
     penalty: 0.76,
-    faceAFace: 0.3,
-    repriseSurface: 0.15,
-    frappePremiereIntention: 0.17,
-    teteSurCentre: 0.1,
+    faceAFace: 0.34,
+    repriseSurface: 0.21,
+    frappePremiereIntention: 0.21,
+    teteSurCentre: 0.135,
     frappeHorsSurface: 0.04,
-    lob: 0.12,
+    lob: 0.15,
     coupFrancDirect: 0.06,
-    contreAttaqueFinition: 0.22,
+    contreAttaqueFinition: 0.27,
     dribbleHautNiveau: 0.3,
     dribbleStandard: 0.48,
     /** §6.1 : « J'élimine le gardien tranquillement » → base 0.31. */
@@ -168,7 +178,20 @@ export const MATCH_BALANCE = {
     /** Un défenseur direct de cette note ou plus impose le plafond « dribble haut niveau ». */
     highLevelDefenderFrom: 78,
     /** Conversion du coéquipier servi selon la nature de la passe (avant gardien adverse). */
-    teammateConversion: { faceAFace: 0.34, centre: 0.16, profondeur: 0.3, passeCourte: 0.14, centreEnRetrait: 0.24, remise: 0.11, fixation: 0.1 },
+    /**
+     * Conversion du coéquipier servi. Elle était SUPÉRIEURE à celle du joueur
+     * incarné en face-à-face (0.34 contre une base de 0.30) : servir valait mieux
+     * que conclure soi-même. Elle reste en dessous de la base du joueur, qui est
+     * censé être le finisseur de l'histoire.
+     */
+    teammateConversion: { faceAFace: 0.27, centre: 0.16, profondeur: 0.3, passeCourte: 0.14, centreEnRetrait: 0.24, remise: 0.11, fixation: 0.1 },
+    /**
+     * Qualité d'occasion pour laquelle « occasion créée » vaut son delta plein.
+     * Au-dessous, la passe rapporte moins ; au-dessus, davantage. Sans cette
+     * proportionnalité, servir un coéquipier qui rate payait autant que le servir
+     * pour un but, et davantage qu'un tir cadré : le jeu apprenait à ne pas tirer.
+     */
+    occasionCreeeReference: 0.3,
     /** Style de penalty : multiplicateur (le panenka est un vrai pari). */
     penaltyStyle: { placer: 1.0, puissance: 0.96, panenka: 0.7 },
     /** Gardien sur penalty : le tireur choisit un côté caché ; bon côté ×, mauvais côté ×. */

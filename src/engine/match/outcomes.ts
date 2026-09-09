@@ -292,7 +292,11 @@ function pass(acc: Acc, input: ResolutionInput): void {
       type: onTarget ? 'arret' : 'tir_non_cadre', side: onTarget ? opp : side, playerId: onTarget ? gk?.id : target.id,
       secondaryPlayerId: onTarget ? target.id : undefined, xg: conv, involvesPlayer: true, detail: { tireur: fullName(target.identity), servi_par: fullName(ctx.player!.identity) },
     });
-    rate(acc, input, 'occasion_creee', 'Occasion créée');
+    // Une occasion créée vaut ce qu'elle valait : proportionnelle à la qualité de
+    // l'occasion offerte, et non un forfait. Le forfait à +0,25 était versé même
+    // quand le coéquipier ratait, ce qui rendait la passe plus payante que la
+    // frappe au moment de conclure — le jeu apprenait à ne jamais tirer.
+    rateRaw(acc, input, R.delta.occasion_creee * (conv / RES.occasionCreeeReference) * importanceFactor(input.ctx.match.importance), 'Occasion créée');
     acc.kind = 'occasion_creee';
     acc.facts.tireur = fullName(target.identity);
     return;

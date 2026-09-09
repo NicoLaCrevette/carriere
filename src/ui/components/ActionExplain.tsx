@@ -24,33 +24,41 @@ export default function ActionExplain({ outcome, action, ouvertParDefaut = false
 
   return (
     <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06] p-3">
-      <div className="flex items-center gap-3">
-        <Cadran probabilite={e.probabilite} tirage={e.tirage} reussi={reussi} />
+      <div className="flex items-start gap-3">
+        <span
+          aria-hidden
+          className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${reussi ? 'bg-signal-green' : 'bg-signal-red'}`}
+        />
         <div className="min-w-0 flex-1">
           <p className="text-sm">
             <span className={reussi ? 'text-signal-green' : 'text-signal-red'}>{reussi ? 'Réussi' : 'Raté'}</span>
             {action && <span className="text-muted"> · {action.action.replace(/_/g, ' ')}</span>}
           </p>
-          <p className="mt-0.5 text-xs text-muted leading-snug">{e.resume}</p>
-          <p className="mt-0.5 text-[11px] text-muted tabular-nums">
-            Tirage {pourcentage(e.tirage)} contre {pourcentage(e.probabilite)} de réussite
+          {/* La cause en toutes lettres. Le chiffre est un clic plus loin : voir plus bas. */}
+          <p className="mt-0.5 text-sm text-muted leading-snug">{e.causeLisible}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setOuvert((v) => !v)}
+          aria-expanded={ouvert}
+          className="shrink-0 rounded-full px-3 py-1 text-[10px] uppercase tracking-wide text-muted ring-1 ring-white/10 hover:text-white hover:ring-white/25"
+        >
+          {ouvert ? 'Masquer' : 'Les chiffres'}
+        </button>
+      </div>
+
+      {ouvert && (
+        <div className="mt-3 flex items-center gap-3 border-t border-white/[0.06] pt-3">
+          <Cadran probabilite={e.probabilite} tirage={e.tirage} reussi={reussi} />
+          <p className="text-[11px] text-muted tabular-nums">
+            Tirage {pourcentage(e.tirage)} contre {pourcentage(e.probabilite)} de réussite.
             {e.plafonne && <span className="ml-1.5 rounded-full bg-white/[0.06] px-2 py-0.5">plafond du jeu atteint</span>}
           </p>
         </div>
-        {e.facteurs.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setOuvert((v) => !v)}
-            aria-expanded={ouvert}
-            className="shrink-0 rounded-full px-3 py-1 text-[10px] uppercase tracking-wide text-muted ring-1 ring-white/10 hover:text-white hover:ring-white/25"
-          >
-            {ouvert ? 'Masquer' : 'Le détail'}
-          </button>
-        )}
-      </div>
+      )}
 
       {ouvert && e.facteurs.length > 0 && (
-        <ul className="mt-3 space-y-1.5 border-t border-white/[0.06] pt-3">
+        <ul className="mt-3 space-y-1.5">
           {e.facteurs.map((f) => (
             <li key={f.key} className="flex items-center gap-2 text-xs">
               <span className="w-40 shrink-0 truncate text-muted">{f.label}</span>

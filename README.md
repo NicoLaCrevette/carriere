@@ -159,10 +159,11 @@ npx tsx src/scripts/validateDataset.ts src/data/leagues/real/ligue1-2026-27.json
   avec un timer (« Laisser faire » = action par défaut). L'intention est
   classée, le moteur tire le résultat avec des probabilités plafonnées, puis la
   narration (commentateur, coach, capitaine, public) commente. **Chaque action
-  dit pourquoi elle a marché ou non** : la probabilité, le tirage qui a décidé,
-  et ce qui a pesé — distance, densité, pression, fraîcheur, adversaire direct,
-  marquage, plafond du §6. Le bilan d'après-match reprend la même lecture pour
-  toutes les décisions. « Simuler la fin
+  dit pourquoi elle a marché ou non**, en toutes lettres et sans chiffre :
+  « Ce qui t'a manqué : la frappe partait de loin et le moment était lourd. »
+  Voir un pourcentage avant chaque geste rappelle que ce n'est pas le joueur qui
+  décide ; la probabilité, le tirage et le détail des facteurs restent à un clic.
+  Le bilan d'après-match reprend la même lecture pour toutes les décisions. « Simuler la fin
   du match » termine le match automatiquement. Le direct est sauvegardé à
   chaque situation : recharger reprend au même point, avec le même tirage.
 - **Après le match** : bilan (note, cinq regards, décisions), titres de presse
