@@ -21,14 +21,22 @@ export interface Env {
   LLM_BASE?: string;
   LLM_MODEL_COURANT?: string;
   LLM_MODEL_PREMIUM?: string;
+  /** '0' pour retomber sur `json_object` si le fournisseur n'accepte pas `json_schema`. */
+  LLM_JSON_SCHEMA?: string;
   /** Origines autorisées, séparées par des virgules. */
   ORIGINES?: string;
 }
 
-const BASE_DEFAUT = 'https://api.groq.com/openai/v1';
+/**
+ * Mistral par défaut : palier gratuit sans frais, API compatible OpenAI, et
+ * surtout des modèles français natifs — le jeu est entièrement en français, et
+ * c'est là que la différence s'entend le plus. Tout fournisseur compatible
+ * OpenAI reste utilisable en changeant `LLM_BASE` et les modèles.
+ */
+const BASE_DEFAUT = 'https://api.mistral.ai/v1';
 const MODELES_DEFAUT: Record<LlmTier, string> = {
-  courant: 'llama-3.3-70b-versatile',
-  premium: 'llama-3.3-70b-versatile',
+  courant: 'mistral-small-latest',
+  premium: 'mistral-large-latest',
 };
 
 /** Mots-clés que les grammaires JSON des fournisseurs n'acceptent pas toujours. */
@@ -127,25 +135,49 @@ export default {
     }
 
     const schema = schemaDe(task.id);
-    // Le schéma est joint à la consigne : tous les fournisseurs compatibles OpenAI
-    // n'acceptent pas encore `json_schema`, mais tous respectent `json_object`.
-    const systeme = schema
+    // Mistral (comme OpenAI) contraint le décodage au schéma en mode strict : le
+    // modèle ne PEUT pas sortir du schéma. Cela supprime les réponses hors format
+    // et le raisonnement en anglais que certains modèles ajoutent autour.
+    // `LLM_JSON_SCHEMA=0` retombe sur `json_object`, accepté par tous.
+    const strict = schema !== null && env.LLM_JSON_SCHEMA !== '0';
+    const format = strict
+      ? { response_format: { type: 'json_schema', json_schema: { name: task.id, schema, strict: true } } }
+      : schema
+        ? { response_format: { type: 'json_object' } }
+        : {};
+    // Sans contrainte de décodage, le schéma est joint à la consigne : tous les
+    // fournisseurs compatibles OpenAI n'acceptent pas `json_schema`, mais tous
+    // respectent `json_object`.
+    const systemeAvecSchemaEnTexte = schema
       ? `${body.system}\n\nRéponds UNIQUEMENT par un objet JSON valide conforme à ce schéma, sans texte autour :\n${JSON.stringify(schema)}`
       : body.system;
+    // Sous contrainte de décodage, répéter le schéma dans la consigne ne sert à rien.
+    const systeme = strict ? body.system : systemeAvecSchemaEnTexte;
+
+    const appeler = (avecSchema: boolean): Promise<Response> => fetch(`${env.LLM_BASE ?? BASE_DEFAUT}/chat/completions`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${env.LLM_API_KEY}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: modeles[body.tier ?? task.tier],
+        messages: [
+          { role: 'system', content: avecSchema ? systeme : systemeAvecSchemaEnTexte },
+          ...body.messages,
+        ],
+        max_tokens: task.maxTokens,
+        temperature: task.id === 'classify_intent' ? 0.1 : task.id === 'analyze_communication' ? 0.3 : 0.85,
+        ...(avecSchema ? format : schema ? { response_format: { type: 'json_object' } } : {}),
+      }),
+      signal: AbortSignal.timeout(task.timeoutMs),
+    });
 
     try {
-      const reponse = await fetch(`${env.LLM_BASE ?? BASE_DEFAUT}/chat/completions`, {
-        method: 'POST',
-        headers: { authorization: `Bearer ${env.LLM_API_KEY}`, 'content-type': 'application/json' },
-        body: JSON.stringify({
-          model: modeles[body.tier ?? task.tier],
-          messages: [{ role: 'system', content: systeme }, ...body.messages],
-          max_tokens: task.maxTokens,
-          temperature: task.id === 'classify_intent' ? 0.1 : task.id === 'analyze_communication' ? 0.3 : 0.85,
-          ...(schema ? { response_format: { type: 'json_object' } } : {}),
-        }),
-        signal: AbortSignal.timeout(task.timeoutMs),
-      });
+      let reponse = await appeler(true);
+      // Un fournisseur qui n'accepte pas notre schéma répond 400 ou 422. Plutôt que
+      // d'échouer, on retente une fois en mode `json_object` avec le schéma dans la
+      // consigne : le jeu reste jouable sur n'importe quel fournisseur compatible.
+      if (strict && (reponse.status === 400 || reponse.status === 422)) {
+        reponse = await appeler(false);
+      }
       if (!reponse.ok) {
         const texte = await reponse.text();
         return new Response(JSON.stringify({ ok: false, error: `Fournisseur ${reponse.status} : ${texte.slice(0, 200)}`, retryable: reponse.status >= 500 || reponse.status === 429 }), { status: 502, headers: head });

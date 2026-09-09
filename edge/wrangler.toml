@@ -6,10 +6,13 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 # Origine du jeu publié : seule autorisée à appeler la fonction.
 ORIGINES = "https://nicolacrevette.github.io"
-# Fournisseur compatible OpenAI. Groq par défaut (palier gratuit généreux).
-LLM_BASE = "https://api.groq.com/openai/v1"
-LLM_MODEL_COURANT = "llama-3.3-70b-versatile"
-LLM_MODEL_PREMIUM = "llama-3.3-70b-versatile"
+# Mistral : palier gratuit, API compatible OpenAI, modèles français natifs.
+LLM_BASE = "https://api.mistral.ai/v1"
+LLM_MODEL_COURANT = "mistral-small-latest"
+LLM_MODEL_PREMIUM = "mistral-large-latest"
+# Contrainte de décodage par schéma. Mettre "0" pour un fournisseur qui ne
+# l'accepte pas ; la fonction retombe de toute façon seule sur `json_object`.
+LLM_JSON_SCHEMA = "1"
 
 # La clé n'est PAS ici : elle vit dans un secret.
 #   npx wrangler secret put LLM_API_KEY

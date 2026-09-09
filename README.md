@@ -77,6 +77,32 @@ trop lente retombe sur les textes écrits sans jamais bloquer le match.
 Toutes les tâches passent par une sortie JSON contrainte par schéma, ce qui
 neutralise le raisonnement en anglais que certains modèles émettent.
 
+## Mistral, gratuit, sans rien installer
+
+Si tu ne veux pas faire tourner Ollama — ou si tu veux jouer **en ligne**, sans
+que ce PC soit allumé — Mistral est la meilleure voie : palier gratuit sans
+carte bancaire, aucune installation, et des modèles français natifs, ce qui
+s'entend dans un jeu entièrement en français.
+
+1. Crée une clé sur <https://console.mistral.ai> (palier « Experiment »).
+2. Mets-la dans `.env` :
+
+```bash
+echo "MISTRAL_API_KEY=ta-cle" >> .env
+```
+
+Le proxy la détecte au démarrage. L'ordre par défaut reste Ollama d'abord (il ne
+consomme aucun quota et tourne hors ligne), puis Mistral, puis Anthropic.
+`LLM_PROVIDER=mistral` force Mistral.
+
+Le schéma JSON de chaque tâche contraint le décodage (`response_format:
+json_schema`, strict) : le modèle ne *peut* pas sortir du format attendu. Si le
+fournisseur refuse ce mode, le proxy retente seul en `json_object`.
+
+**Pour la version en ligne**, la même clé se dépose dans un secret Cloudflare et
+la fonction de `edge/` s'en sert : voir `edge/README.md`. C'est ce qui donne des
+dialogues générés depuis n'importe quel navigateur, PC éteint.
+
 ## Clé API Anthropic (facultative, payante)
 
 La clé ne quitte jamais ta machine et n'est jamais dans le bundle du

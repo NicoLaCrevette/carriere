@@ -56,9 +56,23 @@ let client: Anthropic | null = apiKey ? new Anthropic({ apiKey }) : null;
 
 // ── Fournisseur local Ollama (gratuit, hors ligne) ────────────────────────
 
-type Provider = 'ollama' | 'anthropic' | 'aucun';
+type Provider = 'ollama' | 'mistral' | 'anthropic' | 'aucun';
 
 const OLLAMA_URL = (process.env.OLLAMA_URL ?? OLLAMA_DEFAULT_URL).replace(/\/+$/, '');
+
+/**
+ * Mistral : palier gratuit, modèles français natifs, aucune installation.
+ *
+ * C'est le fournisseur à conseiller quand on ne veut pas faire tourner Ollama :
+ * meilleur français qu'un modèle local de 8 milliards de paramètres, et la même
+ * clé sert ensuite à la version en ligne via `edge/`.
+ */
+const MISTRAL_KEY = (process.env.MISTRAL_API_KEY ?? '').trim();
+const MISTRAL_URL = (process.env.MISTRAL_URL ?? 'https://api.mistral.ai/v1').replace(/\/+$/, '');
+const MISTRAL_MODELS: Record<LlmTier, string> = {
+  courant: process.env.MISTRAL_MODEL_COURANT ?? 'mistral-small-latest',
+  premium: process.env.MISTRAL_MODEL_PREMIUM ?? 'mistral-large-latest',
+};
 /** 'auto' (défaut) : Ollama s'il répond, sinon Anthropic si une clé est là, sinon les textes de repli du jeu. */
 const PREFERRED: 'auto' | Provider = (process.env.LLM_PROVIDER as 'auto' | Provider) || 'auto';
 
@@ -85,10 +99,67 @@ async function refreshOllama(force = false): Promise<string[]> {
   return ollamaModels;
 }
 
+/**
+ * Un appel à Mistral, au contrat OpenAI.
+ *
+ * Le schéma contraint le décodage (`json_schema`, strict) : le modèle ne peut
+ * pas sortir du format. Si le fournisseur refuse ce mode, on retente une fois en
+ * `json_object` avec le schéma dans la consigne — c'est ce que fait aussi la
+ * fonction hébergée de `edge/`.
+ */
+async function mistralChat(
+  _task: LlmTaskId,
+  model: string,
+  system: string,
+  messages: { role: string; content: string }[],
+  maxTokens: number,
+  schema: object | undefined,
+  timeoutMs: number,
+): Promise<{ content: string; promptTokens: number; outputTokens: number }> {
+  const consigneAvecSchema = schema
+    ? `${system}
+
+Réponds UNIQUEMENT par un objet JSON valide conforme à ce schéma, sans texte autour :
+${JSON.stringify(schema)}`
+    : system;
+
+  const appeler = async (strict: boolean): Promise<globalThis.Response> => fetch(`${MISTRAL_URL}/chat/completions`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${MISTRAL_KEY}`, 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'system', content: strict ? system : consigneAvecSchema }, ...messages],
+      max_tokens: maxTokens,
+      ...(schema
+        ? strict
+          ? { response_format: { type: 'json_schema', json_schema: { name: 'reponse', schema, strict: true } } }
+          : { response_format: { type: 'json_object' } }
+        : {}),
+    }),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+
+  let res = await appeler(!!schema);
+  if (schema && (res.status === 400 || res.status === 422)) res = await appeler(false);
+  if (!res.ok) throw new Error(`${res.status} ${(await res.text()).slice(0, 160)}`);
+  const json = (await res.json()) as {
+    choices?: { message?: { content?: string } }[];
+    usage?: { prompt_tokens?: number; completion_tokens?: number };
+  };
+  return {
+    content: json.choices?.[0]?.message?.content ?? '',
+    promptTokens: json.usage?.prompt_tokens ?? 0,
+    outputTokens: json.usage?.completion_tokens ?? 0,
+  };
+}
+
 async function currentProvider(): Promise<Provider> {
   if (PREFERRED === 'anthropic') return client ? 'anthropic' : 'aucun';
+  if (PREFERRED === 'mistral') return MISTRAL_KEY ? 'mistral' : 'aucun';
   if (PREFERRED === 'ollama') return (await refreshOllama()).length > 0 ? 'ollama' : 'aucun';
+  // Ollama d'abord : il ne consomme aucun quota et tourne hors ligne.
   if ((await refreshOllama()).length > 0) return 'ollama';
+  if (MISTRAL_KEY) return 'mistral';
   return client ? 'anthropic' : 'aucun';
 }
 
@@ -180,9 +251,11 @@ app.get('/api/key/status', async (_req, res) => {
   res.json({
     present: provider !== 'aucun',
     provider,
-    gratuit: provider === 'ollama',
-    models: provider === 'ollama' && ollamaByTier ? ollamaByTier : DEFAULT_MODELS,
+    // Mistral est gratuit sur son palier « Experiment » : le jeu doit le dire.
+    gratuit: provider === 'ollama' || provider === 'mistral',
+    models: provider === 'ollama' && ollamaByTier ? ollamaByTier : provider === 'mistral' ? MISTRAL_MODELS : DEFAULT_MODELS,
     ollama: { disponible: ollamaModels.length > 0, url: OLLAMA_URL, installes: ollamaModels },
+    mistral: { cle: !!MISTRAL_KEY, modeles: MISTRAL_MODELS },
     anthropic: { cle: !!client },
   });
 });
@@ -224,7 +297,7 @@ app.post('/api/llm', async (req: Request, res: Response) => {
   }
   const provider = await currentProvider();
   if (provider === 'aucun') {
-    res.status(401).json({ ok: false, error: 'Aucun fournisseur disponible : lance Ollama ou renseigne une clé Anthropic.', retryable: false });
+    res.status(401).json({ ok: false, error: 'Aucun fournisseur disponible : lance Ollama, renseigne une clé Mistral (gratuite) ou une clé Anthropic.', retryable: false });
     return;
   }
   const task = LLM_TASKS[body.task];
@@ -263,6 +336,29 @@ app.post('/api/llm', async (req: Request, res: Response) => {
     }
     return;
   }
+
+  if (provider === 'mistral') {
+    const model = MISTRAL_MODELS[tier];
+    try {
+      const out = await mistralChat(body.task, model, body.system, body.messages, body.maxTokens ?? task.maxTokens, task.schema ? jsonSchemaFor(body.task, task.schema) : undefined, task.timeoutMs);
+      if (!task.schema) {
+        res.json({ ok: true, data: out.content, usage: { input_tokens: out.promptTokens, output_tokens: out.outputTokens }, model });
+        return;
+      }
+      const json = extractJson(out.content);
+      const valid = json ? task.schema.safeParse(JSON.parse(json)) : null;
+      if (!valid?.success) {
+        res.status(502).json({ ok: false, error: `Sortie hors schéma : ${valid?.error.issues[0]?.message ?? 'aucun JSON'}`, retryable: true });
+        return;
+      }
+      res.json({ ok: true, data: valid.data, usage: { input_tokens: out.promptTokens, output_tokens: out.outputTokens }, model });
+    } catch (e) {
+      const timeout = e instanceof Error && (e.name === 'TimeoutError' || e.name === 'AbortError');
+      res.status(timeout ? 504 : 502).json({ ok: false, error: timeout ? 'Mistral a dépassé le délai.' : `Mistral injoignable : ${e instanceof Error ? e.message : 'erreur'}`, retryable: true });
+    }
+    return;
+  }
+
 
   const anthropic = client!;
   const model = body.model || DEFAULT_MODELS[tier];
@@ -314,7 +410,7 @@ app.post('/api/llm/stream', async (req: Request, res: Response) => {
   }
   const provider = await currentProvider();
   if (provider === 'aucun') {
-    res.status(401).json({ ok: false, error: 'Aucun fournisseur disponible : lance Ollama ou renseigne une clé Anthropic.', retryable: false });
+    res.status(401).json({ ok: false, error: 'Aucun fournisseur disponible : lance Ollama, renseigne une clé Mistral (gratuite) ou une clé Anthropic.', retryable: false });
     return;
   }
   const task = LLM_TASKS[body.task];
