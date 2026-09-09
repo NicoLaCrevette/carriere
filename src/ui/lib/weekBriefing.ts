@@ -115,6 +115,13 @@ function trouverAlerte(state: CareerState): string | undefined {
     const jours = Math.max(1, blessure.announcedDays - (blessure.actualDays - blessure.daysRemaining));
     return `Tu es blessé, encore ${jours} jour${jours > 1 ? 's' : ''} d’après le staff. L’entraînement ne rapporte presque rien d’ici là.`;
   }
+  // Ne pas jouer passe avant tout le reste : c'est ce qui bloque une carrière.
+  const sans = p.matchsSansJouer ?? 0;
+  if (sans >= 3) {
+    const offre = state.offers.some((o) => o.status === 'en_attente' || o.status === 'en_negociation');
+    return `${sans} matchs sans entrer en jeu. Tu ne progresses presque plus sans temps de jeu`
+      + (offre ? ' — et tu as une offre sur la table.' : ' : un prêt ou un transfert te rendrait un vrai rôle.');
+  }
   if (p.fitness < 55) return `Condition ${Math.round(p.fitness)} : tu es cuit. Une semaine légère te remettrait d’aplomb.`;
   if (p.sharpness < 40) return `Rythme ${Math.round(p.sharpness)} : tu manques de matchs, tu seras court sur les duels.`;
   if (p.morale < 35) return `Moral ${Math.round(p.morale)}. Ça se voit sur le terrain.`;

@@ -42,6 +42,14 @@ export const SEASON_BALANCE = {
     subOffExtra: { untilMinute: 72, freshnessBelow: 35, subbedOnGraceMinutes: 20 },
     /** Confiance implicite du coach envers un PNJ (pas de jauge pour eux). */
     npcTrustDefault: 60,
+    /**
+     * Seuils de la situation prévisionnelle dans un effectif (`player/squadFit.ts`),
+     * exprimés en points de note d'écart avec le DEUXIÈME choix du club au poste.
+     * Calibrés sur la simulation : à Angers l'écart vaut 10 et le joueur finit
+     * titulaire dès la deuxième saison ; à Strasbourg il vaut 15 et le joueur
+     * ne dispute pas une seule titularisation en quatre saisons.
+     */
+    squadFit: { titulaire: 0, rotation: 6, remplacant: 14 },
     /** Composition du onze (lineupSelection). */
     lineup: {
       /** Forme -5..+5 → ±10 % sur le score de sélection. */

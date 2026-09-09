@@ -120,10 +120,13 @@ export function applyPlayerMatchEffects(state: CareerState, match: Match, matchR
   if (!report || report.minutesPlayed <= 0) {
     const g = BALANCE.bounds.gauge;
     p.morale = clamp(p.morale - BALANCE.career.morale.benchMalus, g.min, g.max);
-    result.messages.push(`${line}. Tu n'es pas entré en jeu.`);
+    p.matchsSansJouer = (p.matchsSansJouer ?? 0) + 1;
+    result.messages.push(`${line}. Tu n'es pas entré en jeu${p.matchsSansJouer >= 3 ? ` (${p.matchsSansJouer} matchs de suite)` : ''}.`);
     addLog(state, 'match', `${line} (non entré).`);
     return;
   }
+  // Une seule minute suffit à remettre le compteur à zéro.
+  p.matchsSansJouer = 0;
 
   const age = ageAt(p.identity.birthDate, state.currentDate);
   addStats(p.seasonStats.total, report.stats);

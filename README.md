@@ -173,6 +173,17 @@ npx tsx src/scripts/validateDataset.ts src/data/leagues/real/ligue1-2026-27.json
   est consigné dans Médias (journal des citations, promesses tenues ou rompues).
 - **Au fil des jours** : appel de l'agent, convocation dans le bureau du coach,
   proposées sur l'accueil quand les règles du moteur le décident.
+- **Choix du club** : à la création, chaque club annonce ce qu'il te réserve —
+  « Remplaçant · 5ᵉ sur 7 à ton poste », avec les notes de tes concurrents et
+  ce qu'il te manque pour valoir le titulaire. Ce n'est pas décoratif : mesuré
+  en simulation, un jeune attaquant signant dans un club où il est 7ᵉ choix ne
+  dispute pas une seule titularisation en quatre saisons, tandis que le même
+  joueur dans un club à sa mesure est titulaire dès la deuxième et marque 26
+  buts en quatrième.
+- **Quand tu ne joues plus** : le jeu compte les matchs consécutifs sans entrer,
+  te le dit dans l'alerte de semaine, et le coach finit par te convoquer pour
+  te dire que tu n'es pas dans ses plans. L'agent, lui, nomme l'offre : club,
+  indemnité ou prêt, salaire, durée, rôle promis, position de ton club.
 - **Carrière** : mercato (clubs qui te suivent, offres à accepter, négocier ou
   refuser, prolongations, demande de transfert publique, prêts), sponsors
   (propositions, négociation, obligations), revenus cumulés, traits acquis par

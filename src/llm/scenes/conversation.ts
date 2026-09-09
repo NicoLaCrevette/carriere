@@ -6,13 +6,13 @@
  * promesses et storylines sont créées. Aucune logique React ici.
  */
 import type {
-  CareerState, CommunicationAnalysis, CommunicationFlags, GameEvent, Id, InteractionChannel, Npc, NpcKind, PublicPromise, QuoteEntry, ReputationDeltas, Storyline,
+  CareerState, CommunicationAnalysis, CommunicationFlags, GameEvent, Id, InteractionChannel, Npc, NpcKind, PromisedRole, PublicPromise, QuoteEntry, ReputationDeltas, Storyline, TransferOffer,
 } from '../../engine/types';
 import { EVENT_CATALOGUE } from '../../engine/events/catalogue';
 import { resolveEvent } from '../../engine/events/roll';
 import { BALANCE } from '../../engine/config/balance';
 import { difficultyProfile } from '../../engine/config/difficulty';
-import { addDays, ageAt, formatDateFr } from '../../engine/calendar/dates';
+import { addDays, ageAt, compareDates, formatDateFr, formatDateFrShort } from '../../engine/calendar/dates';
 import { applyDeltas } from '../../engine/career/apply';
 import { rankOf } from '../../engine/season/table';
 import { POSITION_LABELS } from '../../engine/config/positions';
@@ -124,6 +124,51 @@ function coachNpc(state: CareerState): Npc | undefined {
   return club ? state.world.npcs[club.coachId] : undefined;
 }
 
+const ROLES_PROMIS: Record<PromisedRole, string> = {
+  titulaire_indiscutable: 'titulaire indiscutable', titulaire: 'titulaire', rotation: 'joueur de rotation', projet: 'projet d’avenir',
+};
+
+const POSTURES: Record<TransferOffer['currentClubStance'], string> = {
+  ouvert: 'ton club est prêt à te laisser partir',
+  reticent: 'ton club traîne des pieds',
+  ferme: 'ton club refuse de te laisser partir',
+};
+
+function euros(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1).replace('.0', '')} M€`;
+  return `${Math.round(v / 1000)} k€`;
+}
+
+/** L’offre dont l’agent doit parler : la plus proche de son échéance. */
+export function offreOuverte(state: CareerState): TransferOffer | undefined {
+  return state.offers
+    .filter((o) => o.status === 'en_attente' || o.status === 'en_negociation')
+    .sort((a, b) => compareDates(a.expiresOn, b.expiresOn))[0];
+}
+
+/**
+ * Met l’offre en mots utilisables par le repli comme par le modèle.
+ *
+ * Le préambule interdit au modèle d’inventer un chiffre : sans ces faits,
+ * l’agent appelait pour une offre qu’il ne pouvait pas nommer. Une prolongation
+ * du club actuel (même club, aucune indemnité) est distinguée d’un départ :
+ * l’agent disait « un club te suit » pour une simple prolongation.
+ */
+export function decrireOffre(state: CareerState, offre: TransferOffer): NonNullable<SceneFacts['offre']> {
+  const club = state.world.clubs[offre.clubId];
+  return {
+    club: club?.name ?? offre.clubId,
+    pret: offre.loan,
+    prolongation: offre.clubId === state.player.contract.clubId && offre.fee === 0,
+    indemnite: euros(offre.fee),
+    salaire: euros(offre.wageMonthly),
+    annees: offre.years,
+    role: ROLES_PROMIS[offre.promisedRole],
+    posture: POSTURES[offre.currentClubStance],
+    expireLe: formatDateFrShort(offre.expiresOn),
+  };
+}
+
 /** Faits de scène : identité, club, dernier match, promesse en cours, concurrent, minutes. */
 export function sceneFacts(state: CareerState, matchId?: Id): SceneFacts {
   const p = state.player;
@@ -134,7 +179,10 @@ export function sceneFacts(state: CareerState, matchId?: Id): SceneFacts {
     prenom: p.identity.firstName, nom: p.identity.lastName, club: club?.shortName ?? '?',
     coachNom: coachNpc(state)?.lastName, rang: ls && club ? rankOf(ls, club.id) : undefined,
     minutesSaison: p.seasonStats.total.minutes, butsSaison: p.seasonStats.total.goals,
+    matchsSansJouer: p.matchsSansJouer ?? 0,
   };
+  const offre = offreOuverte(state);
+  if (offre) facts.offre = decrireOffre(state, offre);
   if (played) {
     const m = played.match;
     const home = m.homeClubId === p.contract.clubId;

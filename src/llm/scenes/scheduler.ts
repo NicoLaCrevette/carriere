@@ -57,7 +57,13 @@ export function scenesForDay(state: CareerState): SceneSpec[] {
   const lastOffice = lastSceneOn(state, 'bureau');
   const gapOk = !lastOffice || diffDays(lastOffice, date) >= S.coachOfficeGapDays;
   if (gapOk && state.season.phase === 'championnat') {
-    if (p.coachTrust <= S.coachOfficeTrustLow) out.push({ kind: 'bureau_coach', title: 'Convocation dans le bureau du coach', topic: 'sanction', mandatory: true });
+    // Le joueur ne joue plus depuis longtemps : le coach le lui dit en face. Sans
+    // ce déclencheur, on pouvait passer des saisons entières à zéro minute sans
+    // que personne ne l'explique — et le sujet « statut », pourtant écrit, ne
+    // servait jamais.
+    if ((p.matchsSansJouer ?? 0) >= S.coachOfficeSansJouer) {
+      out.push({ kind: 'bureau_coach', title: 'Le coach veut faire le point sur ta place', topic: 'statut', mandatory: true });
+    } else if (p.coachTrust <= S.coachOfficeTrustLow) out.push({ kind: 'bureau_coach', title: 'Convocation dans le bureau du coach', topic: 'sanction', mandatory: true });
     else if (p.coachTrust >= S.coachOfficeTrustHigh) out.push({ kind: 'bureau_coach', title: 'Le coach veut te voir', topic: 'felicitations', mandatory: false });
   }
   // La causerie d'avant grand match : le coach vient te chercher deux jours avant.
@@ -85,10 +91,21 @@ export function scenesForDay(state: CareerState): SceneSpec[] {
   }
 
   // Une offre sur la table : l'agent appelle, que le joueur l'ait demandé ou non.
-  const offreOuverte = state.offers.some((o) => o.status === 'en_attente' || o.status === 'en_negociation');
+  // Le titre distingue un départ d'une prolongation du club actuel : l'agent
+  // annonçait « une offre » pour un simple renouvellement.
+  const offre = state.offers
+    .filter((o) => o.status === 'en_attente' || o.status === 'en_negociation')
+    .sort((a, b) => compareDates(a.expiresOn, b.expiresOn))[0];
   const dernierAppel = lastSceneOn(state, 'telephone');
-  if (offreOuverte && (!dernierAppel || diffDays(dernierAppel, date) >= S.agentSurOffre.gapDays)) {
-    out.push({ kind: 'agent', title: 'Ton agent a une offre à te soumettre', topic: 'interet', mandatory: false });
+  if (offre && (!dernierAppel || diffDays(dernierAppel, date) >= S.agentSurOffre.gapDays)) {
+    const prolongation = offre.clubId === p.contract.clubId && offre.fee === 0;
+    const nomClub = state.world.clubs[offre.clubId]?.name ?? 'un club';
+    out.push({
+      kind: 'agent',
+      title: prolongation ? `${nomClub} te propose de prolonger` : `${nomClub} te veut : ton agent appelle`,
+      topic: 'interet',
+      mandatory: false,
+    });
   }
 
   // Événements de vie (§12) non résolus des derniers jours : une réponse libre en décide l'issue.

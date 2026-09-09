@@ -19,6 +19,25 @@ function fmtEuros(v: number): string {
   return `${Math.round(v / 1000)} k€`;
 }
 
+/**
+ * Offres de transfert ouvertes.
+ *
+ * Le préambule interdit au modèle d'inventer un chiffre : sans cette ligne,
+ * un agent qui appelle « pour une offre » ne peut structurellement pas dire
+ * de quel club, de quel salaire ni de quel rôle il s'agit.
+ */
+function offerLine(state: CareerState): string {
+  const ouvertes = state.offers.filter((o) => o.status === 'en_attente' || o.status === 'en_negociation');
+  if (ouvertes.length === 0) return '';
+  const parts = ouvertes.slice(0, 3).map((o) => {
+    const club = state.world.clubs[o.clubId]?.name ?? o.clubId;
+    const prolongation = o.clubId === state.player.contract.clubId && o.fee === 0;
+    const nature = prolongation ? 'prolongation' : o.loan ? 'prêt 1 an' : `transfert ${fmtEuros(o.fee)}`;
+    return `${club} (${nature}, ${fmtEuros(o.wageMonthly)}/mois, ${o.years} an(s), rôle promis ${o.promisedRole}, club actuel ${o.currentClubStance}, expire le ${o.expiresOn})`;
+  });
+  return `Offres ouvertes : ${parts.join(' ; ')}.`;
+}
+
 /** Faits durs (≤ 700 caractères) : identité, club, statut, contrat, saison, classement, dernier match, stats, forme, blessure. */
 export function hardFacts(state: CareerState): string {
   const p = state.player;
@@ -44,6 +63,7 @@ export function hardFacts(state: CareerState): string {
     `Saison : ${stats.matches} matchs (${stats.starts} titularisations), ${stats.minutes} min, ${stats.goals} buts, ${stats.assists} passes, note moyenne ${stats.ratingCount > 0 ? (stats.ratingSum / stats.ratingCount).toFixed(2) : '-'}. ${lastLine}`,
     `Forme ${p.form.toFixed(1)}/5, condition ${Math.round(p.fitness)}/100, moral ${Math.round(p.morale)}/100.${injury ? ` Blessé : ${injury.type}, ${injury.daysRemaining} jours restants.` : ''}`,
     `Réputation : club ${Math.round(state.reputation.club.value)}, supporters ${Math.round(state.reputation.supporters.value)}, coach ${Math.round(state.reputation.coach.value)}, coéquipiers ${Math.round(state.reputation.teammates.value)}, ligue ${Math.round(state.reputation.league.value)}, monde ${Math.round(state.reputation.world.value)}, médias ${Math.round(state.reputation.media.value)}.`,
+    offerLine(state),
   ].filter(Boolean).join(' ');
 }
 

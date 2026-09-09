@@ -119,6 +119,13 @@ export const CAREER_BALANCE = {
       agentLowMinutes30Days: 90,
       agentContractMonths: 12,
       coachOfficeTrustLow: 25,
+    /**
+     * Matchs consécutifs sans entrer en jeu avant que le coach ne convoque le
+     * joueur pour lui dire qu'il n'est pas dans ses plans. Cinq, soit un peu
+     * plus d'un mois de championnat : assez pour que ce ne soit pas un hasard,
+     * assez tôt pour qu'il reste une fenêtre de mercato pour réagir.
+     */
+    coachOfficeSansJouer: 5,
       coachOfficeTrustHigh: 75,
       coachOfficeGapDays: 60,
       /** Relation avec l'interlocuteur : par point de score de communication autour de 5. */

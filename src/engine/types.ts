@@ -370,6 +370,13 @@ export interface Player {
   morale: number;
   /** 0-100, confiance en soi liée aux derniers matchs. Sert de malus/bonus discret. */
   confidence: number;
+  /**
+   * Matchs de club consécutifs sans entrer en jeu. Remis à zéro dès une minute
+   * jouée. Sert à dire au joueur qu'il n'est plus dans les plans : sans ce
+   * compteur, on pouvait passer trois saisons à zéro minute sans que le jeu ne
+   * le signale jamais. Absent des sauvegardes antérieures : lire avec `?? 0`.
+   */
+  matchsSansJouer?: number;
   injuries: Injury[];
   /** Prédisposition cachée aux blessures (0-1). */
   injuryProneness: number;

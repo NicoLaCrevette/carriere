@@ -6,6 +6,7 @@ import { POSITION_LABELS } from '../../engine/config/positions';
 import { DIFFICULTY_LABELS } from '../../engine/config/difficulty';
 import { allocationLimits, validateAllocation } from '../../engine/player/createPlayer';
 import { computeOverall } from '../../engine/player/overall';
+import { squadFit, type FitVerdict } from '../../engine/player/squadFit';
 import { buildAllocation } from '../../engine/sim/headless';
 import { formatSeed, parseSeed, randomSeed } from '../../engine/rng/derive';
 import { avatarParDefaut } from '../lib/avatar';
@@ -333,9 +334,11 @@ export default function NewCareerScreen() {
                     >
                       <p className="font-display uppercase tracking-wide">{c.name}</p>
                       <p className="text-xs text-muted">{c.city} · Prestige {c.prestige}</p>
+                      <ConcurrenceBadge club={c} position={draft.position} overall={previewOverall} />
                     </button>
                   ))}
                 </div>
+                {selectedClub && <ConcurrenceDetail club={selectedClub} position={draft.position} overall={previewOverall} />}
               </>
             )}
           </div>
@@ -477,6 +480,46 @@ export default function NewCareerScreen() {
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Ce que le club te réserve, dit avant de signer.
+ *
+ * Sans ça, un « prometteur » signait dans un club où il ne jouerait jamais —
+ * mesuré à Strasbourg : zéro titularisation en quatre saisons — et le jeu ne
+ * l'en avertissait pas. Aucun chiffre inventé : ce sont les notes des joueurs
+ * du club, dans le jeu de données.
+ */
+const VERDICTS: Record<FitVerdict, { texte: string; classe: string; court: string }> = {
+  titulaire: { texte: 'Tu es le meilleur du club à ce poste : tu joues tout de suite.', classe: 'text-signal-green', court: 'Titulaire' },
+  rotation: { texte: 'Tu es dans la rotation : tu joueras régulièrement dès la première saison.', classe: 'text-signal-green', court: 'Rotation' },
+  remplacant: { texte: 'Tu commences remplaçant. Il faudra t’imposer, mais la place est prenable en une ou deux saisons.', classe: 'text-signal-amber', court: 'Remplaçant' },
+  hors_plans: { texte: 'Tu n’es pas dans les plans. À ce niveau de concurrence, tu risques de ne pas jouer du tout pendant plusieurs saisons.', classe: 'text-signal-red', court: 'Hors des plans' },
+};
+
+function ConcurrenceBadge({ club, position, overall }: { club: DatasetClub; position: Position; overall: number }) {
+  const fit = squadFit(club, position, overall);
+  const v = VERDICTS[fit.verdict];
+  return (
+    <p className={`mt-1 text-[11px] ${v.classe}`}>
+      {v.court} · {fit.rang}<sup>e</sup> sur {fit.effectif} à ton poste
+    </p>
+  );
+}
+
+function ConcurrenceDetail({ club, position, overall }: { club: DatasetClub; position: Position; overall: number }) {
+  const fit = squadFit(club, position, overall);
+  const v = VERDICTS[fit.verdict];
+  return (
+    <div className="mt-3 rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06] p-3">
+      <p className="text-[11px] uppercase tracking-wide text-muted">La concurrence à {club.name}</p>
+      <p className={`mt-1 text-sm ${v.classe}`}>{v.texte}</p>
+      <p className="mt-2 text-xs text-muted">
+        Notes à ton poste : {fit.concurrents.join(', ')} — toi, {overall}.
+        {fit.ecartAuPremier > 0 && ` Il te manque ${fit.ecartAuPremier} points pour valoir le titulaire.`}
+      </p>
     </div>
   );
 }
