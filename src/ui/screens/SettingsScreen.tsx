@@ -10,6 +10,7 @@ import { useUiStore } from '../../store/uiStore';
 import Panel from '../components/Panel';
 import SectionTitle from '../components/SectionTitle';
 import Button from '../components/Button';
+import HostedProviderForm from '../components/HostedProviderForm';
 import VoicePreview from '../components/VoicePreview';
 import SaveSlotsPanel from '../components/SaveSlotsPanel';
 
@@ -121,12 +122,11 @@ export default function SettingsScreen() {
         <div className="space-y-3 text-sm">
           <p className="text-xs text-muted">
             Le jeu est jouable sans rien : sans modèle, il utilise ses textes pré-écrits et un classement par mots-clés.
-            Pour des dialogues générés gratuitement, deux voies : lance Ollama sur ta machine (le proxy le
-            détecte tout seul, tout reste hors ligne), ou pose la clé d’un fournisseur hébergé dans <code>.env</code>
-            (<code>LLM_API_KEY</code>, et <code>LLM_BASE_URL</code> si ce n’est pas Mistral). Mistral, Groq,
-            Google AI Studio et Cerebras ont tous un palier gratuit ; n’importe lequel fait l’affaire.
+            Pour des dialogues générés gratuitement, deux voies : lance Ollama sur ta machine (le proxy le détecte
+            tout seul, tout reste hors ligne), ou colle ci-dessous la clé d’un fournisseur hébergé — rien à installer.
             Une clé Anthropic reste possible, payante, et n'apparaît jamais dans le navigateur.
           </p>
+          <HostedProviderForm actuel={info?.hote} onEnregistre={() => void refreshProxy()} />
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={settings.llmEnabled} onChange={(e) => settings.setLlmEnabled(e.target.checked)} />
             Utiliser l'IA quand elle est disponible

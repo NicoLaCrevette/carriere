@@ -71,25 +71,26 @@ const OLLAMA_URL = (process.env.OLLAMA_URL ?? OLLAMA_DEFAULT_URL).replace(/\/+$/
  * La même clé sert ensuite à la version en ligne, via la fonction de `edge/`.
  */
 // `MISTRAL_API_KEY` reste accepté : c'était le nom avant que le proxy ne soit générique.
-const HOTE_KEY = (process.env.LLM_API_KEY ?? process.env.MISTRAL_API_KEY ?? '').trim();
-const HOTE_URL = (process.env.LLM_BASE_URL ?? process.env.MISTRAL_URL ?? 'https://api.mistral.ai/v1').replace(/\/+$/, '');
+let HOTE_KEY = (process.env.LLM_API_KEY ?? process.env.MISTRAL_API_KEY ?? '').trim();
+let HOTE_URL = (process.env.LLM_BASE_URL ?? process.env.MISTRAL_URL ?? 'https://api.mistral.ai/v1').replace(/\/+$/, '');
 const HOTE_COURANT = process.env.LLM_MODEL_COURANT ?? process.env.MISTRAL_MODEL_COURANT ?? 'mistral-small-latest';
-const HOTE_MODELS: Record<LlmTier, string> = {
+let HOTE_MODELS: Record<LlmTier, string> = {
   courant: HOTE_COURANT,
   // Sans modèle « premium » explicite, on reprend le courant : un nom Mistral par
   // défaut ferait échouer toutes les grandes scènes chez un autre fournisseur.
   premium: process.env.LLM_MODEL_PREMIUM ?? process.env.MISTRAL_MODEL_PREMIUM
     ?? (process.env.LLM_MODEL_COURANT || process.env.MISTRAL_MODEL_COURANT ? HOTE_COURANT : 'mistral-large-latest'),
 };
-/** Nom lisible du fournisseur, déduit de l'adresse, pour l'écran Réglages. */
-const HOTE_NOM = (() => {
+/** Nom lisible du fournisseur, déduit de l'adresse : un message d'erreur ne doit jamais nommer le mauvais. */
+function nomDeLUrl(url: string): string {
   try {
-    const h = new URL(HOTE_URL).hostname.replace(/^api\./, '').replace(/\.(ai|com|dev)$/, '');
+    const h = new URL(url).hostname.replace(/^api\./, '').replace(/\.(ai|com|dev)$/, '');
     return h.charAt(0).toUpperCase() + h.slice(1);
   } catch {
     return 'Fournisseur hébergé';
   }
-})();
+}
+let HOTE_NOM = nomDeLUrl(HOTE_URL);
 /** 'auto' (défaut) : Ollama s'il répond, sinon Anthropic si une clé est là, sinon les textes de repli du jeu. */
 const PREFERRED: 'auto' | Provider = (process.env.LLM_PROVIDER as 'auto' | Provider) || 'auto';
 
@@ -223,12 +224,37 @@ async function ollamaChat(taskId: LlmTaskId, model: string, system: string, mess
   };
 }
 
-/** Écrit (ou remplace) ANTHROPIC_API_KEY dans le .env local. */
-function persistKey(key: string): void {
-  const lines = existsSync(ENV_PATH) ? readFileSync(ENV_PATH, 'utf8').split(/\r?\n/) : [];
-  const kept = lines.filter((l) => !l.startsWith('ANTHROPIC_API_KEY='));
-  kept.push(`ANTHROPIC_API_KEY=${key}`);
+/** Écrit (ou remplace) des variables dans le .env local, en gardant le reste. */
+/**
+ * Lit le .env quel que soit son encodage.
+ *
+ * `echo "X=y" >> .env` dans PowerShell écrit en **UTF-16**, pas en UTF-8. dotenv
+ * ne sait pas le lire : la clé est alors silencieusement ignorée, et une
+ * réécriture naïve en utf8 corrompt le fichier. On détecte donc la marque
+ * d'ordre des octets, et on réécrit toujours en UTF-8.
+ */
+function readEnvLines(): string[] {
+  if (!existsSync(ENV_PATH)) return [];
+  const brut = readFileSync(ENV_PATH);
+  const utf16le = brut[0] === 0xff && brut[1] === 0xfe;
+  const utf16be = brut[0] === 0xfe && brut[1] === 0xff;
+  const texte = utf16le
+    ? brut.toString('utf16le', 2)
+    : utf16be
+      ? Buffer.from(brut.subarray(2)).swap16().toString('utf16le')
+      : brut.toString('utf8').replace(/^﻿/, '');
+  return texte.split(/\r?\n/);
+}
+
+function persistEnv(valeurs: Record<string, string>): void {
+  const lines = readEnvLines();
+  const kept = lines.filter((l) => !Object.keys(valeurs).some((k) => l.startsWith(`${k}=`)));
+  for (const [k, v] of Object.entries(valeurs)) kept.push(`${k}=${v}`);
   writeFileSync(ENV_PATH, kept.filter((l, i, a) => l.length > 0 || i < a.length - 1).join('\n') + '\n', 'utf8');
+}
+
+function persistKey(key: string): void {
+  persistEnv({ ANTHROPIC_API_KEY: key });
 }
 
 interface LlmRequestBody {
@@ -312,6 +338,43 @@ app.post('/api/key', (req: Request, res: Response) => {
   client = new Anthropic({ apiKey });
   persistKey(key);
   res.json({ present: true });
+});
+
+/**
+ * Clé et adresse du fournisseur hébergé, saisies depuis l'écran Réglages.
+ *
+ * Sans ce point d'entrée il fallait éditer `.env` à la main puis relancer le
+ * proxy : trop d'obstacles pour quelqu'un qui veut juste coller une clé. Elle
+ * est écrite dans `.env` (jamais dans le dépôt, jamais dans le navigateur) et
+ * prise en compte immédiatement.
+ */
+app.post('/api/hote', (req: Request, res: Response) => {
+  const cle = typeof req.body?.cle === 'string' ? req.body.cle.trim() : '';
+  const url = typeof req.body?.url === 'string' ? req.body.url.trim().replace(/\/+$/, '') : '';
+  const courant = typeof req.body?.courant === 'string' ? req.body.courant.trim() : '';
+  const premium = typeof req.body?.premium === 'string' ? req.body.premium.trim() : '';
+
+  if (url) {
+    try {
+      new URL(url);
+    } catch {
+      res.status(400).json({ ok: false, error: 'Adresse invalide.' });
+      return;
+    }
+  }
+
+  HOTE_KEY = cle;
+  if (url) HOTE_URL = url;
+  HOTE_NOM = nomDeLUrl(HOTE_URL);
+  if (courant) HOTE_MODELS = { courant, premium: premium || courant };
+
+  persistEnv({
+    LLM_API_KEY: HOTE_KEY,
+    LLM_BASE_URL: HOTE_URL,
+    LLM_MODEL_COURANT: HOTE_MODELS.courant,
+    LLM_MODEL_PREMIUM: HOTE_MODELS.premium,
+  });
+  res.json({ ok: true, cle: !!HOTE_KEY, nom: HOTE_NOM, url: HOTE_URL, modeles: HOTE_MODELS });
 });
 
 app.post('/api/llm', async (req: Request, res: Response) => {

@@ -94,17 +94,16 @@ Mistral est le défaut : ce sont des modèles français natifs, et le jeu est
 entièrement en français. Mais **prends celui où tu arrives à ouvrir un compte** —
 certaines consoles refusent l'accès selon l'espace de travail ou l'entreprise.
 
-```bash
-echo "LLM_API_KEY=ta-cle" >> .env
-```
+Le plus simple : **colle-la dans l'écran Réglages du jeu**. Le proxy l'écrit
+dans `.env` et la prend en compte tout de suite — rien à éditer à la main, rien
+à relancer.
 
-Si ce n'est pas Mistral, ajoute aussi l'adresse et le modèle :
+Si tu préfères le fichier, attention à l'encodage sous Windows :
+`echo "..." >> .env` dans PowerShell écrit en **UTF-16**, que dotenv ne sait pas
+lire — la clé serait silencieusement ignorée. Utilise :
 
-```bash
-printf 'LLM_BASE_URL=https://api.groq.com/openai/v1
-LLM_MODEL_COURANT=llama-3.3-70b-versatile
-LLM_MODEL_PREMIUM=llama-3.3-70b-versatile
-' >> .env
+```powershell
+Add-Content -Encoding utf8 .env "LLM_API_KEY=ta-cle"
 ```
 
 Le proxy détecte la clé au démarrage et l'écran Réglages affiche le nom du
