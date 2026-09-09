@@ -2,6 +2,8 @@ node_modules
 dist
 .env
 .env.*
+# Le modèle, lui, doit être dans le dépôt : le README dit de le copier.
+!.env.example
 *.local
 .vite
 coverage
